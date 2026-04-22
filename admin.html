@@ -551,6 +551,43 @@
 
         .sync-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
 
+        /* ── Testimonial admin cards ────────────────────────── */
+        .testimonial-admin-card {
+            background: var(--white);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .testimonial-admin-card.editable { border-left: 3px solid var(--gold); }
+
+        .tac-stars { color: var(--gold); font-size: 1rem; margin-bottom: 0.4rem; }
+
+        .tac-quote {
+            font-style: italic;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .tac-meta { font-size: 0.85rem; color: var(--navy); margin-bottom: 0.75rem; }
+
+        .tac-actions { display: flex; gap: 0.6rem; align-items: center; }
+
+        /* ── FAQ admin rows ──────────────────────────────────── */
+        .faq-admin-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            background: var(--white);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 0.6rem;
+        }
+
         /* ── Responsive ─────────────────────────────────────── */
         @media (max-width: 600px) {
             .admin-header { padding: 0 1rem; }
@@ -602,6 +639,8 @@
         <button class="tab-btn" data-tab="availability">Availability</button>
         <button class="tab-btn" data-tab="services">Services</button>
         <button class="tab-btn" data-tab="rates">Rates</button>
+        <button class="tab-btn" data-tab="testimonials">Testimonials</button>
+        <button class="tab-btn" data-tab="faq">FAQ</button>
     </nav>
 
     <div class="admin-body">
@@ -700,6 +739,32 @@
                 </div>
             </div>
 
+            <!-- Testimonials Tab -->
+            <div id="tab-testimonials" class="tab-panel">
+                <h2 class="section-heading">Pending Submissions</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    References submitted by visitors. Approve to add to the public site, or reject to discard.
+                </p>
+                <div id="pending-list"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Approved Testimonials</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    These are shown on the public site. Edit or remove as needed, then hit Save Changes.
+                </p>
+                <div id="approved-list"></div>
+                <button type="button" class="btn-sm" id="addTestimonialBtn" style="margin-top:0.75rem">+ Add testimonial manually</button>
+            </div>
+
+            <!-- FAQ Tab -->
+            <div id="tab-faq" class="tab-panel">
+                <h2 class="section-heading">Frequently Asked Questions</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    Edit questions and answers shown on the public site. Drag to reorder is not supported — delete and re-add to reorder.
+                </p>
+                <div id="faq-list"></div>
+                <button type="button" class="btn-sm" id="addFaqBtn" style="margin-top:0.75rem">+ Add question</button>
+            </div>
+
         </div>
     </div>
 </div>
@@ -734,6 +799,15 @@ const DEFAULTS = {
     icalUrl: '',
     rates: {},
     ratesNotes: '',
+    testimonials: [],
+    faq: [
+        { q: 'What ages do you work with?',              a: 'I work with children from infants through high school age. I also offer pet sitting for dogs, cats, and other small animals, and have experience with a wide range of personalities and needs.' },
+        { q: 'What are your typical hours?',             a: "My availability varies week to week — the calendar on this page always reflects my current open dates. I'm generally available mornings and afternoons, with some evenings. Weekend availability is limited but possible." },
+        { q: 'Do you do overnights or travel nannying?', a: 'Yes, on a case-by-case basis. Please include details in your booking request or reach out directly so we can discuss arrangements and rates.' },
+        { q: 'Are you CPR / First Aid certified?',       a: "Yes — I hold current CPR and First Aid certification. Safety is always the top priority, and I'm happy to share documentation upon request." },
+        { q: 'How does payment work?',                   a: 'Payment is accepted via Venmo or Cash App, typically at the end of each session. Recurring clients may arrange weekly invoicing. See the Pay section below for links.' },
+        { q: 'How do I cancel or reschedule?',           a: "Life happens! Please give at least 24 hours notice when possible. Just reply to your confirmation email or use the Ask a Question form to reach me." },
+    ],
     services: [
         { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true },
         { id: 'petsitting', icon: '🐾', name: 'Pet Sitting',             desc: "Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.",    active: true },
@@ -816,6 +890,8 @@ function populateUI() {
     renderAdminCalendar();
     renderServicesList();
     renderRatesList();
+    renderApprovedList();
+    renderFaqList();
 }
 
 function harvestUI() {
@@ -826,6 +902,8 @@ function harvestUI() {
     config.ratesNotes    = document.getElementById('cfg-rates-notes').value.trim();
     config.services      = readServicesFromUI();
     config.rates         = readRatesFromUI();
+    config.testimonials  = readApprovedFromUI();
+    config.faq           = readFaqFromUI();
     // availableDates kept in sync on every click
 }
 
@@ -1022,7 +1100,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
-        if (btn.dataset.tab === 'availability') renderAdminCalendar();
+        if (btn.dataset.tab === 'availability')  renderAdminCalendar();
+        if (btn.dataset.tab === 'testimonials') loadPendingSubmissions();
     });
 });
 
@@ -1113,6 +1192,153 @@ function importDates(dates, merge) {
     showToast(`✓ ${dates.length} dates imported — hit Save Changes to apply.`, 'success');
     document.querySelector('[data-tab="availability"]').click();
 }
+
+// ── Testimonials (pending submissions) ────────────────────────────
+async function loadPendingSubmissions() {
+    const el = document.getElementById('pending-list');
+    el.innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">Loading…</p>';
+    try {
+        const snap = await db.collection('testimonials')
+            .where('approved', '==', false)
+            .orderBy('createdAt', 'desc')
+            .get();
+        if (snap.empty) {
+            el.innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">No pending submissions.</p>';
+            return;
+        }
+        el.innerHTML = '';
+        snap.forEach(doc => {
+            const d = doc.data();
+            const stars = '★'.repeat(Math.max(1, Math.min(5, d.stars || 5)));
+            const card = document.createElement('div');
+            card.className = 'testimonial-admin-card';
+            card.innerHTML = `
+                <div class="tac-stars">${stars}</div>
+                <p class="tac-quote">"${d.quote}"</p>
+                <p class="tac-meta"><strong>${d.name}</strong>${d.role ? ' · ' + d.role : ''}</p>
+                <div class="tac-actions">
+                    <button class="btn-primary tac-approve">Approve</button>
+                    <button class="btn-sm tac-reject">Reject</button>
+                </div>`;
+            card.querySelector('.tac-approve').addEventListener('click', () => approvePending(doc.id, d, card));
+            card.querySelector('.tac-reject').addEventListener('click',  () => rejectPending(doc.id, card));
+            el.appendChild(card);
+        });
+    } catch (e) {
+        el.innerHTML = `<p style="color:var(--danger);font-size:0.875rem">Failed to load: ${e.message}</p>`;
+    }
+}
+
+async function approvePending(id, data, card) {
+    try {
+        await db.collection('testimonials').doc(id).delete();
+        config.testimonials = config.testimonials || [];
+        config.testimonials.push({ name: data.name, role: data.role || '', quote: data.quote, stars: data.stars || 5 });
+        renderApprovedList();
+        card.remove();
+        showToast('✓ Approved — hit Save Changes to publish.', 'success');
+        if (!document.getElementById('pending-list').querySelector('.testimonial-admin-card')) {
+            document.getElementById('pending-list').innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">No pending submissions.</p>';
+        }
+    } catch (e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function rejectPending(id, card) {
+    if (!confirm('Discard this submission?')) return;
+    try {
+        await db.collection('testimonials').doc(id).delete();
+        card.remove();
+        if (!document.getElementById('pending-list').querySelector('.testimonial-admin-card')) {
+            document.getElementById('pending-list').innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">No pending submissions.</p>';
+        }
+        showToast('Submission discarded.', 'success');
+    } catch (e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+// ── Testimonials (approved / editable) ────────────────────────────
+function renderApprovedList() {
+    const list = document.getElementById('approved-list');
+    list.innerHTML = '';
+    (config.testimonials || []).forEach((t, i) => {
+        const row = document.createElement('div');
+        row.className = 'testimonial-admin-card editable';
+        row.innerHTML = `
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center">
+                <span style="font-size:0.75rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.05em">Stars</span>
+                <select class="ta-stars" style="border:1px solid #ddd;border-radius:4px;padding:0.25rem 0.5rem;font-size:0.85rem;background:var(--cream)">
+                    ${[5,4,3,2,1].map(n => `<option value="${n}"${(t.stars||5)===n?' selected':''}>${'★'.repeat(n)}</option>`).join('')}
+                </select>
+            </div>
+            <input class="ta-name" type="text" value="${t.name}" placeholder="Name"
+                style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--cream)">
+            <input class="ta-role" type="text" value="${t.role || ''}" placeholder="How they know you (e.g. Nanny Client · 2 years)"
+                style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--cream)">
+            <textarea class="ta-quote" rows="3" placeholder="Their testimonial"
+                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);resize:vertical">${t.quote}</textarea>
+            <div class="tac-actions" style="margin-top:0.5rem">
+                <button class="btn-sm ta-delete" style="color:var(--danger);border-color:var(--danger)">Remove</button>
+            </div>`;
+        row.querySelector('.ta-delete').addEventListener('click', () => {
+            config.testimonials.splice(i, 1);
+            renderApprovedList();
+        });
+        list.appendChild(row);
+    });
+}
+
+function readApprovedFromUI() {
+    return Array.from(document.querySelectorAll('#approved-list .testimonial-admin-card')).map(row => ({
+        name:  row.querySelector('.ta-name').value.trim(),
+        role:  row.querySelector('.ta-role').value.trim(),
+        quote: row.querySelector('.ta-quote').value.trim(),
+        stars: +row.querySelector('.ta-stars').value,
+    }));
+}
+
+document.getElementById('addTestimonialBtn').addEventListener('click', () => {
+    config.testimonials = config.testimonials || [];
+    config.testimonials.push({ name: '', role: '', quote: '', stars: 5 });
+    renderApprovedList();
+    document.getElementById('approved-list').lastElementChild?.querySelector('.ta-name')?.focus();
+});
+
+// ── FAQ ───────────────────────────────────────────────────────────
+function renderFaqList() {
+    const list = document.getElementById('faq-list');
+    list.innerHTML = '';
+    (config.faq || DEFAULTS.faq).forEach((item, i) => {
+        const row = document.createElement('div');
+        row.className = 'faq-admin-row';
+        row.innerHTML = `
+            <div style="flex:1">
+                <input class="faq-q" type="text" value="${item.q}" placeholder="Question"
+                    style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--cream)">
+                <textarea class="faq-a" rows="3" placeholder="Answer"
+                    style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);resize:vertical">${item.a}</textarea>
+            </div>
+            <button class="btn-sm faq-del" style="color:var(--danger);border-color:var(--danger);align-self:flex-start;flex-shrink:0">✕</button>`;
+        row.querySelector('.faq-del').addEventListener('click', () => {
+            config.faq = readFaqFromUI();
+            config.faq.splice(i, 1);
+            renderFaqList();
+        });
+        list.appendChild(row);
+    });
+}
+
+function readFaqFromUI() {
+    return Array.from(document.querySelectorAll('#faq-list .faq-admin-row')).map(row => ({
+        q: row.querySelector('.faq-q').value.trim(),
+        a: row.querySelector('.faq-a').value.trim(),
+    }));
+}
+
+document.getElementById('addFaqBtn').addEventListener('click', () => {
+    config.faq = readFaqFromUI();
+    config.faq.push({ q: '', a: '' });
+    renderFaqList();
+    document.getElementById('faq-list').lastElementChild?.querySelector('.faq-q')?.focus();
+});
 
 // ── Toast ─────────────────────────────────────────────────────────
 function showToast(msg, type = 'success') {
