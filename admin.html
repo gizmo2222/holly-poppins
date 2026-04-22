@@ -601,6 +601,7 @@
         <button class="tab-btn active" data-tab="settings">Settings</button>
         <button class="tab-btn" data-tab="availability">Availability</button>
         <button class="tab-btn" data-tab="services">Services</button>
+        <button class="tab-btn" data-tab="rates">Rates</button>
     </nav>
 
     <div class="admin-body">
@@ -683,6 +684,22 @@
                 <div id="services-list"></div>
             </div>
 
+            <!-- Rates Tab -->
+            <div id="tab-rates" class="tab-panel">
+                <h2 class="section-heading">Your Rates</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    For your reference only — these are never shown on the public site.
+                    Use them to stay consistent when responding to rate requests.
+                </p>
+                <div id="rates-list"></div>
+                <div class="field-group" style="margin-top:1.5rem">
+                    <label for="cfg-rates-notes">General Notes</label>
+                    <textarea id="cfg-rates-notes" rows="4"
+                        placeholder="e.g. Weekend surcharge +$5/hr · Holiday rate 1.5× · Mileage over 10 miles billed at $0.67/mi"></textarea>
+                    <p class="field-hint">Anything that applies across services — minimums, surcharges, policies, etc.</p>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -715,6 +732,8 @@ const DEFAULTS = {
     cashappHandle: '',
     availableDates: [],
     icalUrl: '',
+    rates: {},
+    ratesNotes: '',
     services: [
         { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true },
         { id: 'petsitting', icon: '🐾', name: 'Pet Sitting',             desc: "Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.",    active: true },
@@ -789,12 +808,14 @@ async function saveConfig() {
 document.getElementById('saveBtn').addEventListener('click', saveConfig);
 
 function populateUI() {
-    document.getElementById('cfg-email').value   = config.email        || '';
-    document.getElementById('cfg-venmo').value   = config.venmoHandle  || '';
-    document.getElementById('cfg-cashapp').value = config.cashappHandle || '';
-    document.getElementById('cfg-ical').value    = config.icalUrl      || '';
+    document.getElementById('cfg-email').value        = config.email        || '';
+    document.getElementById('cfg-venmo').value        = config.venmoHandle  || '';
+    document.getElementById('cfg-cashapp').value      = config.cashappHandle || '';
+    document.getElementById('cfg-ical').value         = config.icalUrl      || '';
+    document.getElementById('cfg-rates-notes').value  = config.ratesNotes   || '';
     renderAdminCalendar();
     renderServicesList();
+    renderRatesList();
 }
 
 function harvestUI() {
@@ -802,7 +823,9 @@ function harvestUI() {
     config.venmoHandle   = document.getElementById('cfg-venmo').value.trim();
     config.cashappHandle = document.getElementById('cfg-cashapp').value.trim();
     config.icalUrl       = document.getElementById('cfg-ical').value.trim();
+    config.ratesNotes    = document.getElementById('cfg-rates-notes').value.trim();
     config.services      = readServicesFromUI();
+    config.rates         = readRatesFromUI();
     // availableDates kept in sync on every click
 }
 
@@ -937,6 +960,59 @@ function readServicesFromUI() {
         name:   row.querySelector('.svc-name').value,
         desc:   row.querySelector('textarea').value,
     }));
+}
+
+// ── Rates ─────────────────────────────────────────────────────────
+function renderRatesList() {
+    const list = document.getElementById('rates-list');
+    const services = config.services.filter(s => s.active !== false);
+    list.innerHTML = services.map(svc => {
+        const r = (config.rates || {})[svc.id] || {};
+        return `
+        <div class="service-row" style="grid-template-columns:50px 1fr;gap:1rem;align-items:start" data-rate-id="${svc.id}">
+            <span style="font-size:1.75rem;text-align:center;padding-top:0.25rem">${svc.icon}</span>
+            <div>
+                <p style="font-weight:700;color:var(--navy);margin-bottom:0.75rem">${svc.name}</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.5rem">
+                    <div class="field-group" style="margin:0">
+                        <label>Base Rate</label>
+                        <div class="field-prefix">
+                            <span class="field-prefix-label">$/hr</span>
+                            <input type="number" class="rate-base" min="0" step="0.50"
+                                value="${r.base || ''}" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="field-group" style="margin:0">
+                        <label>Min. Hours</label>
+                        <div class="field-prefix">
+                            <span class="field-prefix-label">hrs</span>
+                            <input type="number" class="rate-min" min="0" step="0.5"
+                                value="${r.min || ''}" placeholder="—">
+                        </div>
+                    </div>
+                </div>
+                <div class="field-group" style="margin:0">
+                    <label>Notes</label>
+                    <textarea class="rate-notes" rows="2"
+                        placeholder="e.g. +$10 for 2+ kids, overnight rate $75 flat"
+                        style="font-size:0.85rem">${r.notes || ''}</textarea>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function readRatesFromUI() {
+    const rates = {};
+    document.querySelectorAll('[data-rate-id]').forEach(row => {
+        const id = row.dataset.rateId;
+        rates[id] = {
+            base:  row.querySelector('.rate-base').value.trim(),
+            min:   row.querySelector('.rate-min').value.trim(),
+            notes: row.querySelector('.rate-notes').value.trim(),
+        };
+    });
+    return rates;
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────
