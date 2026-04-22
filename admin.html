@@ -628,7 +628,7 @@
         <span class="admin-logo">☂ Holly Poppins Admin</span>
         <div class="admin-header-right">
             <span class="admin-user" id="adminUserEmail"></span>
-            <a href="/holly-poppins/" class="view-site-link" target="_blank">View Site ↗</a>
+            <a href="https://hollypoppins.com" class="view-site-link" target="_blank">View Site ↗</a>
             <button class="btn-primary" id="saveBtn">Save Changes</button>
             <button class="btn-ghost" id="logoutBtn">Log Out</button>
         </div>
@@ -1119,7 +1119,7 @@ async function syncCalendar() {
     result.style.display = 'none';
 
     try {
-        const proxy = `/holly-poppins/ical-proxy.php?url=${encodeURIComponent(url)}`;
+        const proxy = `/ical-proxy.php?url=${encodeURIComponent(url)}`;
         const resp = await fetch(proxy);
         if (!resp.ok) throw new Error(await resp.text());
         const dates = parseIcal(await resp.text());
