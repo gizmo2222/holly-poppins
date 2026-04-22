@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holly Poppins — Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --navy: #1B2A4A;
+            --navy-light: #2C3E6B;
+            --gold: #D4AF37;
+            --gold-light: #F0D060;
+            --cream: #FAF6ED;
+            --white: #FFFFFF;
+            --text: #2D2D2D;
+            --text-light: #666;
+            --success: #27ae60;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Login ──────────────────────────────────────────── */
+        #screen-login {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #111a2e, var(--navy));
+            padding: 2rem;
+        }
+
+        .login-box {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo .umbrella { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+
+        .login-logo h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--navy);
+            font-size: 1.5rem;
+        }
+
+        .login-logo p {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        /* ── Admin Layout ───────────────────────────────────── */
+        #screen-admin {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #screen-admin.visible { display: flex; }
+
+        .admin-header {
+            background: var(--navy);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            flex-shrink: 0;
+        }
+
+        .admin-logo {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 1.1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .admin-header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .admin-user {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.78rem;
+            margin-right: 0.25rem;
+        }
+
+        .tab-nav {
+            background: var(--white);
+            border-bottom: 2px solid #ece8df;
+            padding: 0 2rem;
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 1rem 1.25rem;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .tab-btn.active { color: var(--navy); border-bottom-color: var(--gold); }
+        .tab-btn:hover:not(.active) { color: var(--navy); }
+
+        .admin-body {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .admin-content {
+            padding: 2.5rem 2rem;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Form Elements ──────────────────────────────────── */
+        .field-group { margin-bottom: 1.25rem; }
+
+        .field-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .field-group input,
+        .field-group textarea {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.9rem;
+            background: var(--cream);
+            color: var(--text);
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .field-group input:focus,
+        .field-group textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: var(--white);
+        }
+
+        .field-hint {
+            font-size: 0.76rem;
+            color: var(--text-light);
+            margin-top: 0.35rem;
+        }
+
+        .field-prefix {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--cream);
+            transition: border-color 0.2s;
+        }
+
+        .field-prefix:focus-within { border-color: var(--gold); background: var(--white); }
+
+        .field-prefix-label {
+            padding: 0.7rem 0.8rem;
+            background: #ece8df;
+            color: var(--text-light);
+            font-size: 0.875rem;
+            border-right: 1px solid #ddd;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .field-prefix input {
+            border: none !important;
+            background: transparent !important;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .section-heading {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--navy);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #ece8df;
+        }
+
+        .section-heading + .section-heading { margin-top: 2.5rem; }
+
+        /* ── Calendar ───────────────────────────────────────── */
+        .cal-wrap {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(27,42,74,0.07);
+            max-width: 420px;
+        }
+
+        .cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .cal-nav {
+            background: none;
+            border: 1px solid var(--gold);
+            color: var(--navy);
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cal-nav:hover { background: var(--gold); }
+
+        .cal-month {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .cal-day-name {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            font-weight: 700;
+            padding: 4px 0 7px;
+            letter-spacing: 0.04em;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.83rem;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: background 0.12s;
+            user-select: none;
+        }
+
+        .cal-day:hover { background: #f0ece3; }
+        .cal-day.empty { cursor: default; pointer-events: none; }
+        .cal-day.today { border: 2px solid var(--navy); color: var(--navy); font-weight: 700; }
+
+        .cal-day.available {
+            background: var(--gold);
+            color: var(--navy);
+            font-weight: 700;
+        }
+
+        .cal-day.available:hover { background: var(--gold-light); }
+
+        .cal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #ece8df;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .cal-actions { display: flex; gap: 0.5rem; }
+
+        /* ── Services ───────────────────────────────────────── */
+        .service-row {
+            background: var(--white);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1.1rem 1.25rem;
+            margin-bottom: 0.6rem;
+            display: grid;
+            grid-template-columns: auto 50px 1fr;
+            gap: 1rem;
+            align-items: start;
+            transition: opacity 0.2s;
+        }
+
+        .service-row.inactive { opacity: 0.45; }
+
+        /* Toggle switch */
+        .toggle {
+            position: relative;
+            width: 38px;
+            height: 21px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .toggle input { display: none; }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #ccc;
+            border-radius: 21px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-slider::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: white;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.2s;
+        }
+
+        .toggle input:checked + .toggle-slider { background: var(--gold); }
+        .toggle input:checked + .toggle-slider::after { transform: translateX(17px); }
+
+        .svc-icon-input {
+            width: 44px;
+            height: 44px;
+            text-align: center;
+            font-size: 1.4rem;
+            padding: 0.2rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: var(--cream);
+            cursor: text;
+        }
+
+        .svc-fields { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .svc-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* ── Buttons ────────────────────────────────────────── */
+        .btn-primary {
+            background: var(--gold);
+            color: var(--navy);
+            padding: 0.65rem 1.5rem;
+            border-radius: 4px;
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-ghost {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.75);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+        .btn-sm {
+            padding: 0.35rem 0.8rem;
+            font-size: 0.75rem;
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-light);
+            font-family: 'Lato', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .btn-sm:hover { border-color: var(--gold); color: var(--navy); }
+
+        /* ── Error / Success inline ─────────────────────────── */
+        .inline-error {
+            background: #fdf0f0;
+            border: 1px solid #f5c6c6;
+            color: var(--danger);
+            padding: 0.7rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-top: 0.75rem;
+            display: none;
+        }
+
+        /* ── View site link ─────────────────────────────────── */
+        .view-site-link {
+            color: rgba(255,255,255,0.45);
+            font-size: 0.78rem;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .view-site-link:hover { color: var(--gold); }
+
+        /* ── Toast ──────────────────────────────────────────── */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.85rem 1.4rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        #toast.show { opacity: 1; transform: translateY(0); }
+        #toast.success { background: var(--success); color: white; }
+        #toast.error   { background: var(--danger);  color: white; }
+
+        /* ── Responsive ─────────────────────────────────────── */
+        @media (max-width: 600px) {
+            .admin-header { padding: 0 1rem; }
+            .admin-user { display: none; }
+            .admin-content { padding: 1.5rem 1rem; }
+            .tab-nav { padding: 0 1rem; overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Login Screen ───────────────────────────────────────────── -->
+<div id="screen-login">
+    <div class="login-box">
+        <div class="login-logo">
+            <span class="umbrella">☂</span>
+            <h1>Holly Poppins</h1>
+            <p>Admin Panel</p>
+        </div>
+        <form id="loginForm">
+            <div class="field-group">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" required placeholder="your@email.com" autocomplete="email">
+            </div>
+            <div class="field-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-primary" id="loginBtn" style="width:100%;margin-top:0.5rem">Sign In</button>
+            <div class="inline-error" id="loginError"></div>
+        </form>
+    </div>
+</div>
+
+<!-- ── Admin Panel ────────────────────────────────────────────── -->
+<div id="screen-admin">
+    <header class="admin-header">
+        <span class="admin-logo">☂ Holly Poppins Admin</span>
+        <div class="admin-header-right">
+            <span class="admin-user" id="adminUserEmail"></span>
+            <a href="/holly-poppins.html" class="view-site-link" target="_blank">View Site ↗</a>
+            <button class="btn-primary" id="saveBtn">Save Changes</button>
+            <button class="btn-ghost" id="logoutBtn">Log Out</button>
+        </div>
+    </header>
+
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="settings">Settings</button>
+        <button class="tab-btn" data-tab="availability">Availability</button>
+        <button class="tab-btn" data-tab="services">Services</button>
+    </nav>
+
+    <div class="admin-body">
+        <div class="admin-content">
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-panel active">
+                <h2 class="section-heading">Contact</h2>
+                <div class="field-group">
+                    <label for="cfg-email">Email Address</label>
+                    <input type="email" id="cfg-email" placeholder="you@example.com">
+                    <p class="field-hint">Shown in the footer and used for form reply-to.</p>
+                </div>
+
+                <h2 class="section-heading">Payment</h2>
+                <div class="field-group">
+                    <label>Venmo Username</label>
+                    <div class="field-prefix">
+                        <span class="field-prefix-label">venmo.com/</span>
+                        <input type="text" id="cfg-venmo" placeholder="your-username">
+                    </div>
+                    <p class="field-hint">Leave blank to hide the Venmo button.</p>
+                </div>
+                <div class="field-group">
+                    <label>Cash App Cashtag</label>
+                    <div class="field-prefix">
+                        <span class="field-prefix-label">cash.app/$</span>
+                        <input type="text" id="cfg-cashapp" placeholder="your-cashtag">
+                    </div>
+                    <p class="field-hint">Leave blank to hide the Cash App button.</p>
+                </div>
+            </div>
+
+            <!-- Availability Tab -->
+            <div id="tab-availability" class="tab-panel">
+                <h2 class="section-heading">Available Dates</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    Click any date to mark it available (gold) or unavailable. Hit Save Changes when done.
+                </p>
+                <div class="cal-wrap">
+                    <div class="cal-header">
+                        <button class="cal-nav" id="adminCalPrev">&#8249;</button>
+                        <span class="cal-month" id="adminCalMonth"></span>
+                        <button class="cal-nav" id="adminCalNext">&#8250;</button>
+                    </div>
+                    <div class="cal-grid" id="adminCalGrid"></div>
+                    <div class="cal-footer">
+                        <span id="calCount" style="font-weight:700;color:var(--navy)">0 dates available</span>
+                        <div class="cal-actions">
+                            <button class="btn-sm" id="addWeekdaysBtn">Add weekdays</button>
+                            <button class="btn-sm" id="clearMonthBtn">Clear month</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Tab -->
+            <div id="tab-services" class="tab-panel">
+                <h2 class="section-heading">Services</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    Toggle services on or off, and edit their icon, name, and description.
+                </p>
+                <div id="services-list"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ── Firebase ─────────────────────────────────────────────────────
+const firebaseConfig = {
+    apiKey: "AIzaSyB5izE8G_gXRRW-RRt54bT6eyqxaxP-14U",
+    authDomain: "holly-poppins.firebaseapp.com",
+    projectId: "holly-poppins",
+    storageBucket: "holly-poppins.firebasestorage.app",
+    messagingSenderId: "642721769952",
+    appId: "1:642721769952:web:602735a6e48903612e2385"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── Defaults ──────────────────────────────────────────────────────
+const DEFAULTS = {
+    email: '',
+    venmoHandle: '',
+    cashappHandle: '',
+    availableDates: [],
+    services: [
+        { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true },
+        { id: 'petsitting', icon: '🐾', name: 'Pet Sitting',             desc: "Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.",    active: true },
+        { id: 'activities', icon: '🎨', name: 'Activities & Enrichment', desc: 'Creative play, arts & crafts, outdoor adventures, and age-appropriate educational experiences.',                active: true },
+        { id: 'household',  icon: '🏠', name: 'Household Support',       desc: 'Light tidying, meal prep, school pickups, and errands to keep the family day running smoothly.',                 active: true },
+    ]
+};
+
+let config = JSON.parse(JSON.stringify(DEFAULTS));
+
+// ── Auth ──────────────────────────────────────────────────────────
+auth.onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('screen-login').style.display = 'none';
+        document.getElementById('screen-admin').classList.add('visible');
+        document.getElementById('adminUserEmail').textContent = user.email;
+        loadConfig();
+    } else {
+        document.getElementById('screen-login').style.display = 'flex';
+        document.getElementById('screen-admin').classList.remove('visible');
+    }
+});
+
+document.getElementById('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const err = document.getElementById('loginError');
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    err.style.display = 'none';
+    try {
+        await auth.signInWithEmailAndPassword(
+            document.getElementById('login-email').value,
+            document.getElementById('login-password').value
+        );
+    } catch {
+        err.textContent = 'Incorrect email or password.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+    }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
+
+// ── Config ────────────────────────────────────────────────────────
+async function loadConfig() {
+    try {
+        const doc = await db.collection('config').doc('settings').get();
+        if (doc.exists) config = { ...DEFAULTS, ...doc.data() };
+    } catch {
+        showToast('Could not load config — using defaults.', 'error');
+    }
+    populateUI();
+}
+
+async function saveConfig() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    harvestUI();
+    try {
+        await db.collection('config').doc('settings').set(config);
+        showToast('✓ Saved — changes are live immediately.', 'success');
+    } catch {
+        showToast('Save failed. Check your connection.', 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+}
+
+document.getElementById('saveBtn').addEventListener('click', saveConfig);
+
+function populateUI() {
+    document.getElementById('cfg-email').value   = config.email        || '';
+    document.getElementById('cfg-venmo').value   = config.venmoHandle  || '';
+    document.getElementById('cfg-cashapp').value = config.cashappHandle || '';
+    renderAdminCalendar();
+    renderServicesList();
+}
+
+function harvestUI() {
+    config.email         = document.getElementById('cfg-email').value.trim();
+    config.venmoHandle   = document.getElementById('cfg-venmo').value.trim();
+    config.cashappHandle = document.getElementById('cfg-cashapp').value.trim();
+    config.services      = readServicesFromUI();
+    // availableDates kept in sync on every click
+}
+
+// ── Calendar ──────────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+let adminCalDate = new Date();
+
+document.getElementById('adminCalPrev').addEventListener('click', () => {
+    adminCalDate.setMonth(adminCalDate.getMonth() - 1);
+    renderAdminCalendar();
+});
+document.getElementById('adminCalNext').addEventListener('click', () => {
+    adminCalDate.setMonth(adminCalDate.getMonth() + 1);
+    renderAdminCalendar();
+});
+document.getElementById('clearMonthBtn').addEventListener('click', clearMonth);
+document.getElementById('addWeekdaysBtn').addEventListener('click', addWeekdays);
+
+function renderAdminCalendar() {
+    const year  = adminCalDate.getFullYear();
+    const month = adminCalDate.getMonth();
+    document.getElementById('adminCalMonth').textContent = `${MONTHS[month]} ${year}`;
+
+    const grid = document.getElementById('adminCalGrid');
+    grid.innerHTML = '';
+
+    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'cal-day-name';
+        el.textContent = d;
+        grid.appendChild(el);
+    });
+
+    const firstDay    = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr    = new Date().toISOString().slice(0, 10);
+
+    for (let i = 0; i < firstDay; i++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day empty';
+        grid.appendChild(el);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const el = document.createElement('div');
+        el.className = 'cal-day';
+        el.textContent = d;
+        if (dateStr === todayStr) el.classList.add('today');
+        if (config.availableDates.includes(dateStr)) el.classList.add('available');
+        el.addEventListener('click', () => toggleDate(dateStr, el));
+        grid.appendChild(el);
+    }
+
+    updateCalCount();
+}
+
+function toggleDate(dateStr, el) {
+    const idx = config.availableDates.indexOf(dateStr);
+    if (idx > -1) {
+        config.availableDates.splice(idx, 1);
+        el.classList.remove('available');
+    } else {
+        config.availableDates.push(dateStr);
+        config.availableDates.sort();
+        el.classList.add('available');
+    }
+    updateCalCount();
+}
+
+function updateCalCount() {
+    const n = config.availableDates.length;
+    document.getElementById('calCount').textContent = `${n} date${n !== 1 ? 's' : ''} available`;
+}
+
+function clearMonth() {
+    const y = adminCalDate.getFullYear();
+    const m = String(adminCalDate.getMonth() + 1).padStart(2, '0');
+    config.availableDates = config.availableDates.filter(d => !d.startsWith(`${y}-${m}`));
+    renderAdminCalendar();
+}
+
+function addWeekdays() {
+    const y = adminCalDate.getFullYear();
+    const m = adminCalDate.getMonth();
+    const days = new Date(y, m + 1, 0).getDate();
+    for (let d = 1; d <= days; d++) {
+        const date = new Date(y, m, d);
+        if (date.getDay() !== 0 && date.getDay() !== 6) {
+            const str = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            if (!config.availableDates.includes(str)) config.availableDates.push(str);
+        }
+    }
+    config.availableDates.sort();
+    renderAdminCalendar();
+}
+
+// ── Services ──────────────────────────────────────────────────────
+function renderServicesList() {
+    const list = document.getElementById('services-list');
+    list.innerHTML = '';
+    config.services.forEach((svc, i) => {
+        const row = document.createElement('div');
+        row.className = `service-row${svc.active ? '' : ' inactive'}`;
+        row.dataset.index = i;
+        row.innerHTML = `
+            <label class="toggle" title="${svc.active ? 'Disable' : 'Enable'} service">
+                <input type="checkbox" ${svc.active ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+            </label>
+            <input class="svc-icon-input" type="text" value="${svc.icon}" maxlength="2" title="Icon (emoji)">
+            <div class="svc-fields">
+                <input class="svc-name" type="text" value="${svc.name}" placeholder="Service name"
+                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-weight:700;background:var(--cream);width:100%">
+                <textarea placeholder="Description"
+                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);width:100%;resize:vertical;min-height:60px">${svc.desc}</textarea>
+            </div>
+        `;
+        row.querySelector('input[type=checkbox]').addEventListener('change', function() {
+            row.classList.toggle('inactive', !this.checked);
+        });
+        list.appendChild(row);
+    });
+}
+
+function readServicesFromUI() {
+    return Array.from(document.querySelectorAll('.service-row')).map((row, i) => ({
+        ...config.services[i],
+        active: row.querySelector('input[type=checkbox]').checked,
+        icon:   row.querySelector('.svc-icon-input').value,
+        name:   row.querySelector('.svc-name').value,
+        desc:   row.querySelector('textarea').value,
+    }));
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+        if (btn.dataset.tab === 'availability') renderAdminCalendar();
+    });
+});
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    clearTimeout(t._t);
+    t._t = setTimeout(() => { t.className = ''; }, 3500);
+}
+</script>
+</body>
+</html>

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Holly Poppins</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -754,28 +756,7 @@
         <p class="section-label">What I Offer</p>
         <h2 class="section-title">Services</h2>
         <div class="divider"></div>
-        <div class="services-grid">
-            <div class="service-card">
-                <span class="service-icon">👶</span>
-                <h3 class="service-name">Nanny &amp; Childcare</h3>
-                <p class="service-desc">Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.</p>
-            </div>
-            <div class="service-card">
-                <span class="service-icon">🐾</span>
-                <h3 class="service-name">Pet Sitting</h3>
-                <p class="service-desc">Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.</p>
-            </div>
-            <div class="service-card">
-                <span class="service-icon">🎨</span>
-                <h3 class="service-name">Activities &amp; Enrichment</h3>
-                <p class="service-desc">Creative play, arts &amp; crafts, outdoor adventures, and age-appropriate educational experiences.</p>
-            </div>
-            <div class="service-card">
-                <span class="service-icon">🏠</span>
-                <h3 class="service-name">Household Support</h3>
-                <p class="service-desc">Light tidying, meal prep, school pickups, and errands to keep the family day running smoothly.</p>
-            </div>
-        </div>
+        <div class="services-grid" id="servicesGrid"></div>
     </div>
 </section>
 
@@ -1028,19 +1009,13 @@
         <div class="divider" style="margin-left:auto;margin-right:auto"></div>
         <p class="pay-desc">Payment is accepted via Venmo or Cash App. Please include your name and the date of service in the payment note — thank you!</p>
         <div class="pay-buttons">
-            <!--
-                UPDATE THESE LINKS with your actual Venmo and Cash App handles.
-                Venmo: https://venmo.com/YOUR-USERNAME
-                Cash App: https://cash.app/$YOUR-CASHTAG
-            -->
-            <a href="https://venmo.com/holly-poppins" class="pay-btn pay-venmo" target="_blank" rel="noopener" id="venmoLink">
+            <a href="#" class="pay-btn pay-venmo" target="_blank" rel="noopener" id="venmoLink">
                 <span class="pay-btn-icon">💙</span> Pay via Venmo
             </a>
-            <a href="https://cash.app/$hollypoppins" class="pay-btn pay-cashapp" target="_blank" rel="noopener" id="cashappLink">
+            <a href="#" class="pay-btn pay-cashapp" target="_blank" rel="noopener" id="cashappLink">
                 <span class="pay-btn-icon">💚</span> Pay via Cash App
             </a>
         </div>
-        <p class="pay-note">Update the payment links in the page source to point to your personal accounts.</p>
     </div>
 </section>
 
@@ -1051,49 +1026,78 @@
 </footer>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-// CONFIGURATION — edit these values to customize your page
-// ═══════════════════════════════════════════════════════════════
+// ── Firebase ───────────────────────────────────────────────────
+const firebaseConfig = {
+    apiKey: "AIzaSyB5izE8G_gXRRW-RRt54bT6eyqxaxP-14U",
+    authDomain: "holly-poppins.firebaseapp.com",
+    projectId: "holly-poppins",
+    storageBucket: "holly-poppins.firebasestorage.app",
+    messagingSenderId: "642721769952",
+    appId: "1:642721769952:web:602735a6e48903612e2385"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// Your email address (update footer and form replies)
-const CONTACT_EMAIL = 'hello@example.com';
+// ── Defaults ───────────────────────────────────────────────────
+const DEFAULTS = {
+    email: '',
+    venmoHandle: '',
+    cashappHandle: '',
+    availableDates: [],
+    services: [
+        { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true },
+        { id: 'petsitting', icon: '🐾', name: 'Pet Sitting',             desc: "Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.",    active: true },
+        { id: 'activities', icon: '🎨', name: 'Activities & Enrichment', desc: 'Creative play, arts & crafts, outdoor adventures, and age-appropriate educational experiences.',                active: true },
+        { id: 'household',  icon: '🏠', name: 'Household Support',       desc: 'Light tidying, meal prep, school pickups, and errands to keep the family day running smoothly.',                 active: true },
+    ]
+};
 
-// Form endpoint — sign up free at https://formspree.io and paste your
-// endpoint URL here (e.g. "https://formspree.io/f/xyzabcde") so that
-// booking requests, questions, and rate inquiries are emailed to you.
-const FORM_ENDPOINT = '';
+let AVAILABLE_DATES = [];
 
-// Payment links — replace with your real handles
-// document.getElementById('venmoLink').href = 'https://venmo.com/YOUR-HANDLE';
-// document.getElementById('cashappLink').href = 'https://cash.app/$YOUR-CASHTAG';
+async function loadConfig() {
+    let cfg = DEFAULTS;
+    try {
+        const doc = await db.collection('config').doc('settings').get();
+        if (doc.exists) cfg = { ...DEFAULTS, ...doc.data() };
+    } catch { /* use defaults */ }
+    applyConfig(cfg);
+}
 
-// Available dates — add dates in "YYYY-MM-DD" format, e.g. "2026-05-01"
-// Leave empty to use the auto-generated demo dates below.
-const MANUAL_AVAILABLE_DATES = [
-    // "2026-04-25",
-    // "2026-04-28",
-    // "2026-04-29",
-];
-
-// ═══════════════════════════════════════════════════════════════
-
-// Build available dates list (manual overrides demo if populated)
-const AVAILABLE_DATES = MANUAL_AVAILABLE_DATES.length > 0
-    ? MANUAL_AVAILABLE_DATES
-    : generateDemoDates();
-
-function generateDemoDates() {
-    const dates = [];
-    const today = new Date();
-    for (let i = 1; i <= 60; i++) {
-        const d = new Date(today);
-        d.setDate(today.getDate() + i);
-        const dow = d.getDay();
-        if (dow !== 0 && dow !== 6 && Math.random() > 0.55) {
-            dates.push(d.toISOString().slice(0, 10));
-        }
+function applyConfig(cfg) {
+    // Email
+    if (cfg.email) {
+        document.getElementById('footerEmail').href = `mailto:${cfg.email}`;
+        document.getElementById('footerEmail').textContent = cfg.email;
     }
-    return dates;
+
+    // Payment buttons
+    const venmoEl   = document.getElementById('venmoLink');
+    const cashappEl = document.getElementById('cashappLink');
+    if (cfg.venmoHandle)   { venmoEl.href   = `https://venmo.com/${cfg.venmoHandle}`;    venmoEl.style.display   = ''; }
+    else                     venmoEl.style.display   = 'none';
+    if (cfg.cashappHandle) { cashappEl.href = `https://cash.app/$${cfg.cashappHandle}`; cashappEl.style.display = ''; }
+    else                     cashappEl.style.display = 'none';
+
+    // Services grid
+    const active = (cfg.services || DEFAULTS.services).filter(s => s.active !== false);
+    document.getElementById('servicesGrid').innerHTML = active.map(s => `
+        <div class="service-card">
+            <span class="service-icon">${s.icon}</span>
+            <h3 class="service-name">${s.name}</h3>
+            <p class="service-desc">${s.desc}</p>
+        </div>`).join('');
+
+    // Service dropdowns
+    const opts = ['<option value="">Select...</option>',
+        ...active.map(s => `<option>${s.name}</option>`),
+        '<option>Other</option>'
+    ].join('');
+    document.getElementById('b-service').innerHTML  = opts;
+    document.getElementById('ra-service').innerHTML = opts;
+
+    // Calendar
+    AVAILABLE_DATES = cfg.availableDates || [];
+    renderCalendar();
 }
 
 // ── Calendar ───────────────────────────────────────────────────
@@ -1116,10 +1120,10 @@ function renderCalendar() {
         grid.appendChild(el);
     });
 
-    const firstDay     = new Date(year, month, 1).getDay();
-    const daysInMonth  = new Date(year, month + 1, 0).getDate();
-    const todayStr     = new Date().toISOString().slice(0, 10);
-    const selectedDate = document.getElementById('b-date').value;
+    const firstDay    = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr    = new Date().toISOString().slice(0, 10);
+    const selected    = document.getElementById('b-date').value;
 
     for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
 
@@ -1130,9 +1134,9 @@ function renderCalendar() {
         el.textContent = d;
 
         const isPast = dateStr < todayStr;
-        if (isPast) el.classList.add('past');
+        if (isPast)            el.classList.add('past');
         if (dateStr === todayStr) el.classList.add('today');
-        if (dateStr === selectedDate) el.classList.add('selected');
+        if (dateStr === selected) el.classList.add('selected');
 
         if (AVAILABLE_DATES.includes(dateStr) && !isPast) {
             el.classList.add('available');
@@ -1145,88 +1149,62 @@ function renderCalendar() {
                 setTimeout(() => document.getElementById('b-name').focus(), 600);
             });
         }
-
         grid.appendChild(el);
     }
 }
 
 document.getElementById('calPrev').addEventListener('click', () => {
-    calDate.setMonth(calDate.getMonth() - 1);
-    renderCalendar();
+    calDate.setMonth(calDate.getMonth() - 1); renderCalendar();
 });
 document.getElementById('calNext').addEventListener('click', () => {
-    calDate.setMonth(calDate.getMonth() + 1);
-    renderCalendar();
+    calDate.setMonth(calDate.getMonth() + 1); renderCalendar();
 });
-
-renderCalendar();
 
 // ── Mobile nav ─────────────────────────────────────────────────
 document.getElementById('navToggle').addEventListener('click', () => {
     document.getElementById('navLinks').classList.toggle('open');
 });
-
 document.querySelectorAll('#navLinks a').forEach(a => {
     a.addEventListener('click', () => document.getElementById('navLinks').classList.remove('open'));
 });
 
 // ── Forms ──────────────────────────────────────────────────────
+const FORM_ENDPOINT = '';
+
 async function submitForm(form, successId, btnLabel) {
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true;
     btn.textContent = 'Sending…';
-
     try {
         if (FORM_ENDPOINT) {
-            await fetch(FORM_ENDPOINT, {
-                method: 'POST',
-                body: new FormData(form),
-                headers: { 'Accept': 'application/json' }
-            });
+            await fetch(FORM_ENDPOINT, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } });
         }
         form.reset();
         document.getElementById(successId).style.display = 'block';
-    } catch (e) {
+    } catch {
         document.getElementById(successId).style.display = 'block';
     }
-
     btn.disabled = false;
     btn.textContent = btnLabel;
 }
 
-document.getElementById('bookingForm').addEventListener('submit', e => {
-    e.preventDefault();
-    submitForm(e.target, 'bookSuccess', 'Send Booking Request');
-});
+document.getElementById('bookingForm').addEventListener('submit', e => { e.preventDefault(); submitForm(e.target, 'bookSuccess', 'Send Booking Request'); });
+document.getElementById('refForm').addEventListener('submit',     e => { e.preventDefault(); submitForm(e.target, 'refSuccess',  'Submit Reference'); });
+document.getElementById('qaForm').addEventListener('submit',      e => { e.preventDefault(); submitForm(e.target, 'qaSuccess',   'Ask Away'); });
+document.getElementById('ratesForm').addEventListener('submit',   e => { e.preventDefault(); submitForm(e.target, 'ratesSuccess','Request Rate Info'); });
 
-document.getElementById('refForm').addEventListener('submit', e => {
-    e.preventDefault();
-    submitForm(e.target, 'refSuccess', 'Submit Reference');
-});
-
-document.getElementById('qaForm').addEventListener('submit', e => {
-    e.preventDefault();
-    submitForm(e.target, 'qaSuccess', 'Ask Away');
-});
-
-document.getElementById('ratesForm').addEventListener('submit', e => {
-    e.preventDefault();
-    submitForm(e.target, 'ratesSuccess', 'Request Rate Info');
-});
-
-// ── FAQ accordion ──────────────────────────────────────────────
+// ── FAQ ────────────────────────────────────────────────────────
 document.querySelectorAll('.faq-question').forEach(btn => {
     btn.addEventListener('click', () => {
-        const item   = btn.parentElement;
+        const item = btn.parentElement;
         const isOpen = item.classList.contains('open');
         document.querySelectorAll('.faq-item.open').forEach(x => x.classList.remove('open'));
         if (!isOpen) item.classList.add('open');
     });
 });
 
-// ── Footer email ───────────────────────────────────────────────
-document.getElementById('footerEmail').href  = `mailto:${CONTACT_EMAIL}`;
-document.getElementById('footerEmail').textContent = CONTACT_EMAIL;
+// ── Init ───────────────────────────────────────────────────────
+loadConfig();
 </script>
 </body>
 </html>

@@ -19,7 +19,8 @@ jobs:
           sshpass -e sftp -o StrictHostKeyChecking=no \
             ${{ secrets.SFTP_USER }}@metacrystal.com <<'SFTP'
           put holly-poppins.html /home/nstrupp/metacrystal.com/holly-poppins.html
+          put admin.html /home/nstrupp/metacrystal.com/admin.html
           SFTP
 
       - name: Confirm
-        run: echo "✅ Deployed holly-poppins.html to metacrystal.com"
+        run: echo "✅ Deployed holly-poppins.html and admin.html to metacrystal.com"
