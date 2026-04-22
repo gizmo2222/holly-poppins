@@ -21,6 +21,7 @@ jobs:
           -mkdir /home/nstrupp/metacrystal.com/holly-poppins
           put index.html /home/nstrupp/metacrystal.com/holly-poppins/index.html
           put admin.html /home/nstrupp/metacrystal.com/holly-poppins/admin.html
+          put ical-proxy.php /home/nstrupp/metacrystal.com/holly-poppins/ical-proxy.php
           SFTP
 
       - name: Confirm

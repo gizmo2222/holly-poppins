@@ -484,6 +484,73 @@
         #toast.success { background: var(--success); color: white; }
         #toast.error   { background: var(--danger);  color: white; }
 
+        /* ── Calendar Sync ──────────────────────────────────── */
+        .cal-instructions {
+            margin-bottom: 1rem;
+            border: 1px solid #ece8df;
+            border-radius: 6px;
+            overflow: hidden;
+            font-size: 0.85rem;
+        }
+
+        .cal-instructions summary {
+            padding: 0.7rem 1rem;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--navy);
+            user-select: none;
+            background: #f4f1ea;
+            list-style: none;
+        }
+
+        .cal-instructions summary::after { content: ' ▾'; color: var(--gold); }
+
+        .cal-instructions[open] summary::after { content: ' ▴'; }
+
+        .cal-instructions-body {
+            padding: 1rem;
+            color: var(--text-light);
+            line-height: 1.7;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .cal-instructions-body strong { color: var(--navy); }
+
+        .sync-result {
+            background: var(--cream);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .sync-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.75rem 0 1rem;
+        }
+
+        .chip {
+            background: rgba(212,175,55,0.18);
+            border: 1px solid rgba(212,175,55,0.45);
+            color: var(--navy);
+            padding: 0.22rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+        .chip.more {
+            background: #ece8df;
+            border-color: #ddd;
+            color: var(--text-light);
+        }
+
+        .sync-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
         /* ── Responsive ─────────────────────────────────────── */
         @media (max-width: 600px) {
             .admin-header { padding: 0 1rem; }
@@ -565,6 +632,23 @@
                     </div>
                     <p class="field-hint">Leave blank to hide the Cash App button.</p>
                 </div>
+
+                <h2 class="section-heading">Calendar Sync</h2>
+                <div class="field-group">
+                    <label for="cfg-ical">iCal Feed URL</label>
+                    <input type="url" id="cfg-ical" placeholder="https://calendar.google.com/calendar/ical/...">
+                    <p class="field-hint">Paste your public iCal URL. Events in the feed will be imported as available dates.</p>
+                </div>
+                <details class="cal-instructions">
+                    <summary>How to get your iCal URL</summary>
+                    <div class="cal-instructions-body">
+                        <p><strong>Google Calendar:</strong> Open Google Calendar → click ⋮ next to your calendar → Settings → scroll to "Integrate calendar" → copy <em>Secret address in iCal format</em>.</p>
+                        <p><strong>Apple iCloud:</strong> Open Calendar → right-click your calendar → Share Calendar → enable Public Calendar → copy the link, then replace <code>webcal://</code> with <code>https://</code>.</p>
+                        <p><strong>Outlook:</strong> Outlook.com → Calendar → Settings → View all Outlook settings → Calendar → Shared calendars → Publish to web → copy the <em>ICS</em> link.</p>
+                    </div>
+                </details>
+                <button type="button" class="btn-primary" id="syncBtn">Sync from Calendar</button>
+                <div id="syncResult" style="display:none"></div>
             </div>
 
             <!-- Availability Tab -->
@@ -630,6 +714,7 @@ const DEFAULTS = {
     venmoHandle: '',
     cashappHandle: '',
     availableDates: [],
+    icalUrl: '',
     services: [
         { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true },
         { id: 'petsitting', icon: '🐾', name: 'Pet Sitting',             desc: "Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.",    active: true },
@@ -707,6 +792,7 @@ function populateUI() {
     document.getElementById('cfg-email').value   = config.email        || '';
     document.getElementById('cfg-venmo').value   = config.venmoHandle  || '';
     document.getElementById('cfg-cashapp').value = config.cashappHandle || '';
+    document.getElementById('cfg-ical').value    = config.icalUrl      || '';
     renderAdminCalendar();
     renderServicesList();
 }
@@ -715,6 +801,7 @@ function harvestUI() {
     config.email         = document.getElementById('cfg-email').value.trim();
     config.venmoHandle   = document.getElementById('cfg-venmo').value.trim();
     config.cashappHandle = document.getElementById('cfg-cashapp').value.trim();
+    config.icalUrl       = document.getElementById('cfg-ical').value.trim();
     config.services      = readServicesFromUI();
     // availableDates kept in sync on every click
 }
@@ -862,6 +949,94 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         if (btn.dataset.tab === 'availability') renderAdminCalendar();
     });
 });
+
+// ── Calendar Sync ─────────────────────────────────────────────────
+document.getElementById('syncBtn').addEventListener('click', syncCalendar);
+
+async function syncCalendar() {
+    const url = document.getElementById('cfg-ical').value.trim();
+    if (!url) { showToast('Enter an iCal URL first.', 'error'); return; }
+
+    const btn = document.getElementById('syncBtn');
+    const result = document.getElementById('syncResult');
+    btn.disabled = true;
+    btn.textContent = 'Syncing…';
+    result.style.display = 'none';
+
+    try {
+        const proxy = `/holly-poppins/ical-proxy.php?url=${encodeURIComponent(url)}`;
+        const resp = await fetch(proxy);
+        if (!resp.ok) throw new Error(await resp.text());
+        const dates = parseIcal(await resp.text());
+        const today = new Date().toISOString().slice(0, 10);
+        const future = dates.filter(d => d >= today);
+
+        if (future.length === 0) {
+            result.innerHTML = '<p style="color:var(--danger);padding:0.75rem 0">No upcoming events found in this calendar feed.</p>';
+        } else {
+            const preview = future.slice(0, 15).map(d => `<span class="chip">${fmtDate(d)}</span>`).join('');
+            const more = future.length > 15 ? `<span class="chip more">+${future.length - 15} more</span>` : '';
+            result.innerHTML = `
+                <div class="sync-result">
+                    <strong style="color:var(--navy)">Found ${future.length} upcoming date${future.length !== 1 ? 's' : ''}</strong>
+                    <div class="sync-chips">${preview}${more}</div>
+                    <div class="sync-actions">
+                        <button class="btn-primary" id="importReplace">Replace all dates</button>
+                        <button class="btn-sm" id="importMerge" style="padding:0.6rem 1rem">Merge with existing</button>
+                    </div>
+                </div>`;
+            document.getElementById('importReplace').addEventListener('click', () => importDates(future, false));
+            document.getElementById('importMerge').addEventListener('click',   () => importDates(future, true));
+        }
+        result.style.display = 'block';
+    } catch (e) {
+        result.innerHTML = `<p style="color:var(--danger);padding:0.75rem 0">Sync failed: ${e.message}</p>`;
+        result.style.display = 'block';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Sync from Calendar';
+}
+
+function parseIcal(text) {
+    text = text.replace(/\r\n[ \t]/g, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const dates = new Set();
+    text.split(/BEGIN:VEVENT/).slice(1).forEach(block => {
+        const s = block.match(/^DTSTART[^\n:]*:([\dTZ ]+)/m);
+        const e = block.match(/^DTEND[^\n:]*:([\dTZ ]+)/m);
+        if (!s) return;
+        const start = isoDate(s[1].trim());
+        if (!start) return;
+        if (e) {
+            const end = isoDate(e[1].trim());
+            if (end && end > start) {
+                let cur = new Date(start + 'T12:00:00');
+                const fin = new Date(end   + 'T12:00:00');
+                while (cur < fin) { dates.add(cur.toISOString().slice(0, 10)); cur.setDate(cur.getDate() + 1); }
+                return;
+            }
+        }
+        dates.add(start);
+    });
+    return Array.from(dates).sort();
+}
+
+function isoDate(val) {
+    const m = val.match(/^(\d{4})(\d{2})(\d{2})/);
+    return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+function fmtDate(d) {
+    return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function importDates(dates, merge) {
+    config.availableDates = merge
+        ? [...new Set([...(config.availableDates || []), ...dates])].sort()
+        : dates;
+    document.getElementById('syncResult').style.display = 'none';
+    showToast(`✓ ${dates.length} dates imported — hit Save Changes to apply.`, 'success');
+    document.querySelector('[data-tab="availability"]').click();
+}
 
 // ── Toast ─────────────────────────────────────────────────────────
 function showToast(msg, type = 'success') {
