@@ -793,10 +793,6 @@
             <!-- Calendar Tab -->
             <div id="tab-calendar" class="tab-panel">
                 <h2 class="section-heading">Available Dates</h2>
-                <div class="info-box" style="margin-bottom:1.5rem">
-                    <p><strong>How it works:</strong> Dates you mark here appear highlighted on the public site. Visitors click a date and submit a booking request — you confirm or decline. Nothing is booked automatically.</p>
-                    <p style="margin-top:0.5rem">Click any date to toggle it available (gold) or unavailable. <strong>Add weekdays</strong> marks every weekday in the current month. <strong>Clear month</strong> removes all dates in the current month. Hit <strong>Save Changes</strong> when done.</p>
-                </div>
                 <div class="cal-wrap">
                     <div class="cal-header">
                         <button class="cal-nav" id="adminCalPrev">&#8249;</button>
@@ -814,31 +810,25 @@
                 </div>
 
                 <h2 class="section-heading" style="margin-top:2.5rem">Calendar Sync</h2>
-                <div class="info-box" style="margin-bottom:1.25rem">
-                    <p><strong>Sync is a manual snapshot, not a live feed.</strong> It reads your calendar once when you click the button — re-sync whenever your schedule changes. A good habit is to sync at the start of each month.</p>
-                    <p style="margin-top:0.5rem"><strong>How to mark available time in your calendar:</strong> Create a dedicated calendar just for availability (e.g. "Availability" or "Open for Bookings") — keep it separate from your personal calendar so private events don't get imported. Add an event on each day you're free. The event name doesn't matter. Then paste that calendar's iCal URL below and sync.</p>
-                    <p style="margin-top:0.5rem">After syncing, dates appear in the calendar above. You can still click to fine-tune — add a day the sync missed or remove one you're no longer free.</p>
-                </div>
                 <div class="field-group">
                     <label for="cfg-ical">iCal Feed URL</label>
                     <input type="url" id="cfg-ical" placeholder="https://calendar.google.com/calendar/ical/...">
-                    <p class="field-hint">Leave blank if you prefer to set availability manually using the calendar above.</p>
+                    <p class="field-hint">Imports events as available dates — one-time snapshot, not a live feed. Re-sync whenever your schedule changes.</p>
                 </div>
                 <details class="cal-instructions">
-                    <summary>How to get your iCal URL</summary>
+                    <summary>Setup &amp; tips</summary>
                     <div class="cal-instructions-body">
-                        <p><strong>Google Calendar:</strong> Open Google Calendar → click ⋮ next to your calendar → Settings → scroll to "Integrate calendar" → copy <em>Secret address in iCal format</em>.</p>
-                        <p><strong>Apple iCloud:</strong> Open Calendar → right-click your calendar → Share Calendar → enable Public Calendar → copy the link, then replace <code>webcal://</code> with <code>https://</code>.</p>
-                        <p><strong>Outlook:</strong> Outlook.com → Calendar → Settings → View all Outlook settings → Calendar → Shared calendars → Publish to web → copy the <em>ICS</em> link.</p>
+                        <p><strong>Tip:</strong> Use a dedicated calendar for availability (e.g. "Open for Bookings") so personal events stay private. Add an event on each day you're free — the name doesn't matter.</p>
+                        <p><strong>Google Calendar:</strong> Click ⋮ next to your calendar → Settings → Integrate calendar → copy <em>Secret address in iCal format</em>.</p>
+                        <p><strong>Apple iCloud:</strong> Right-click your calendar → Share Calendar → enable Public Calendar → copy the link, replace <code>webcal://</code> with <code>https://</code>.</p>
+                        <p><strong>Outlook:</strong> Calendar → Settings → Shared calendars → Publish to web → copy the <em>ICS</em> link.</p>
+                        <p>After syncing you can still click any date to fine-tune.</p>
                     </div>
                 </details>
                 <button type="button" class="btn-primary" id="syncBtn">Sync from Calendar</button>
                 <div id="syncResult" style="display:none"></div>
 
                 <h2 class="section-heading" style="margin-top:2.5rem">Booking Integration</h2>
-                <div class="info-box" style="margin-bottom:1.25rem">
-                    <p>When you <strong>confirm a booking</strong> in the Bookings tab, it can be automatically added to your calendar. Choose a method below, then save. Credentials are stored privately and never shown on the public site.</p>
-                </div>
                 <div class="field-group">
                     <label for="cal-method">Sync Method</label>
                     <select id="cal-method" style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.9rem;background:var(--cream);color:var(--text)">
@@ -847,6 +837,7 @@
                         <option value="google">Google Calendar (service account)</option>
                         <option value="caldav">Apple iCloud / CalDAV</option>
                     </select>
+                    <p class="field-hint">Triggered when you confirm a booking. Credentials are stored privately.</p>
                 </div>
 
                 <!-- Email fields -->
