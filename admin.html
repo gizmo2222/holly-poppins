@@ -726,6 +726,7 @@
                     Toggle services on or off, and edit their icon, name, and description.
                 </p>
                 <div id="services-list"></div>
+                <button type="button" class="btn-sm" id="addServiceBtn" style="margin-top:0.75rem">+ Add service</button>
             </div>
 
             <!-- Rates Tab -->
@@ -1038,6 +1039,13 @@ function readServicesFromUI() {
         desc:   row.querySelector('textarea').value,
     }));
 }
+
+document.getElementById('addServiceBtn').addEventListener('click', () => {
+    config.services = readServicesFromUI();
+    config.services.push({ id: 'svc_' + Date.now(), icon: '✨', name: '', desc: '', active: true });
+    renderServicesList();
+    document.getElementById('services-list').lastElementChild?.querySelector('.svc-name')?.focus();
+});
 
 // ── Rates ─────────────────────────────────────────────────────────
 function renderRatesList() {
