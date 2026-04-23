@@ -749,7 +749,6 @@
         <button class="tab-btn" data-tab="services">Services</button>
         <button class="tab-btn" data-tab="testimonials">Testimonials</button>
         <button class="tab-btn" data-tab="faq">FAQ</button>
-        <button class="tab-btn" data-tab="bookings">Bookings</button>
     </nav>
 
     <div class="admin-body">
@@ -792,7 +791,9 @@
 
             <!-- Calendar Tab -->
             <div id="tab-calendar" class="tab-panel">
+
                 <h2 class="section-heading">Available Dates</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Dates marked here show as available on the public site. Visitors click a date, fill out the booking form, and you confirm or decline below. Nothing is automatically booked.</p>
                 <div class="cal-wrap">
                     <div class="cal-header">
                         <button class="cal-nav" id="adminCalPrev">&#8249;</button>
@@ -809,43 +810,52 @@
                     </div>
                 </div>
 
-                <h2 class="section-heading" style="margin-top:2.5rem">Calendar Sync</h2>
+                <h2 class="section-heading" style="margin-top:2.5rem">Import from Calendar</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Paste an iCal URL to import your free days as available dates. This is a one-time import — re-sync whenever your schedule changes. You can still click dates above to adjust after importing.</p>
                 <div class="field-group">
                     <label for="cfg-ical">iCal Feed URL</label>
                     <input type="url" id="cfg-ical" placeholder="https://calendar.google.com/calendar/ical/...">
-                    <p class="field-hint">Imports events as available dates — one-time snapshot, not a live feed. Re-sync whenever your schedule changes.</p>
                 </div>
                 <details class="cal-instructions">
-                    <summary>Setup &amp; tips</summary>
+                    <summary>How to get your iCal URL</summary>
                     <div class="cal-instructions-body">
                         <p><strong>Tip:</strong> Use a dedicated calendar for availability (e.g. "Open for Bookings") so personal events stay private. Add an event on each day you're free — the name doesn't matter.</p>
                         <p><strong>Google Calendar:</strong> Click ⋮ next to your calendar → Settings → Integrate calendar → copy <em>Secret address in iCal format</em>.</p>
                         <p><strong>Apple iCloud:</strong> Right-click your calendar → Share Calendar → enable Public Calendar → copy the link, replace <code>webcal://</code> with <code>https://</code>.</p>
                         <p><strong>Outlook:</strong> Calendar → Settings → Shared calendars → Publish to web → copy the <em>ICS</em> link.</p>
-                        <p>After syncing you can still click any date to fine-tune.</p>
                     </div>
                 </details>
-                <button type="button" class="btn-primary" id="syncBtn">Sync from Calendar</button>
+                <button type="button" class="btn-primary" id="syncBtn">Import</button>
                 <div id="syncResult" style="display:none"></div>
 
-                <h2 class="section-heading" style="margin-top:2.5rem">Booking Integration</h2>
+                <h2 class="section-heading" style="margin-top:2.5rem">Booking Requests</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">New requests from visitors. Confirm to accept — if you have calendar integration set up below, it will be added automatically.</p>
+                <div id="bookings-pending"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Confirmed</h2>
+                <div id="bookings-confirmed"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Declined</h2>
+                <div id="bookings-declined"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Calendar Integration</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Automatically add a booking to your calendar when you confirm it. Credentials are stored privately and never exposed to visitors.</p>
                 <div class="field-group">
-                    <label for="cal-method">Sync Method</label>
+                    <label for="cal-method">Method</label>
                     <select id="cal-method" style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.9rem;background:var(--cream);color:var(--text)">
-                        <option value="none">None — no auto-sync</option>
-                        <option value="email">Email — receive a .ics attachment</option>
-                        <option value="google">Google Calendar (service account)</option>
+                        <option value="none">None</option>
+                        <option value="email">Email — send me a .ics attachment</option>
+                        <option value="google">Google Calendar</option>
                         <option value="caldav">Apple iCloud / CalDAV</option>
                     </select>
-                    <p class="field-hint">Triggered when you confirm a booking. Credentials are stored privately.</p>
                 </div>
 
                 <!-- Email fields -->
                 <div id="cal-email-fields" style="display:none">
                     <div class="field-group">
-                        <label for="cal-email">Send .ics to Email</label>
+                        <label for="cal-email">Deliver .ics to</label>
                         <input type="email" id="cal-email" placeholder="you@example.com">
-                        <p class="field-hint">An email with a calendar attachment is sent when you confirm a booking. Defaults to your contact email if blank.</p>
+                        <p class="field-hint">Defaults to your contact email if blank.</p>
                     </div>
                 </div>
 
@@ -855,21 +865,21 @@
                         <label for="cal-google-json">Service Account JSON</label>
                         <textarea id="cal-google-json" rows="5" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN RSA PRIVATE KEY-----\n...","client_email":"...@....iam.gserviceaccount.com",...}'
                             style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:0.78rem;background:var(--cream);resize:vertical"></textarea>
-                        <p class="field-hint">Paste the full JSON key downloaded from Google Cloud Console.</p>
+                        <p class="field-hint">Paste the JSON key downloaded from Google Cloud Console.</p>
                     </div>
                     <div class="field-group">
                         <label for="cal-google-id">Calendar ID</label>
                         <input type="text" id="cal-google-id" placeholder="primary">
-                        <p class="field-hint">Use <em>primary</em> for your main calendar, or paste a Calendar ID from Google Calendar → Settings → Integrate calendar.</p>
+                        <p class="field-hint">Use <em>primary</em>, or paste a Calendar ID from Google Calendar → Settings → Integrate calendar.</p>
                     </div>
                     <details class="cal-instructions">
-                        <summary>How to set up Google Calendar sync</summary>
+                        <summary>Setup instructions</summary>
                         <div class="cal-instructions-body">
-                            <p><strong>1.</strong> Go to <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a> and create a project (or use an existing one).</p>
-                            <p><strong>2.</strong> Enable the <strong>Google Calendar API</strong> for your project under APIs &amp; Services → Library.</p>
-                            <p><strong>3.</strong> Go to IAM &amp; Admin → Service Accounts → Create Service Account. Under Keys, add a key and download the <em>JSON</em> file.</p>
-                            <p><strong>4.</strong> Open Google Calendar → hover your calendar → ⋮ → Settings → Share with specific people → add the service account's <code>client_email</code> with <em>Make changes to events</em> permission.</p>
-                            <p><strong>5.</strong> Paste the JSON key above and enter your Calendar ID.</p>
+                            <p><strong>1.</strong> Go to <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a> → create or select a project.</p>
+                            <p><strong>2.</strong> Enable the <strong>Google Calendar API</strong> under APIs &amp; Services → Library.</p>
+                            <p><strong>3.</strong> IAM &amp; Admin → Service Accounts → Create → add a JSON key and download it.</p>
+                            <p><strong>4.</strong> In Google Calendar → Settings → Share with specific people → add the service account's <code>client_email</code> with <em>Make changes to events</em>.</p>
+                            <p><strong>5.</strong> Paste the JSON and your Calendar ID above, then save.</p>
                         </div>
                     </details>
                 </div>
@@ -879,33 +889,24 @@
                     <div class="field-group">
                         <label for="cal-caldav-url">CalDAV Server URL</label>
                         <input type="url" id="cal-caldav-url" placeholder="https://caldav.icloud.com/">
-                        <p class="field-hint">iCloud: <em>https://caldav.icloud.com/</em>. For others, check your calendar app settings.</p>
+                        <p class="field-hint">iCloud default: <em>https://caldav.icloud.com/</em></p>
                     </div>
                     <div class="field-group">
-                        <label for="cal-caldav-user">Username</label>
+                        <label for="cal-caldav-user">Apple ID</label>
                         <input type="text" id="cal-caldav-user" placeholder="yourname@icloud.com" autocomplete="off">
                     </div>
                     <div class="field-group">
                         <label for="cal-caldav-pass">App-Specific Password</label>
                         <input type="password" id="cal-caldav-pass" placeholder="xxxx-xxxx-xxxx-xxxx" autocomplete="off">
-                        <p class="field-hint">iCloud: generate at <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a> → Sign-In &amp; Security → App-Specific Passwords.</p>
+                        <p class="field-hint">Generate one at <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a> → Sign-In &amp; Security → App-Specific Passwords.</p>
                     </div>
                     <button type="button" class="btn-sm" id="findCalendarsBtn" style="margin-bottom:0.75rem">Find my calendars</button>
                     <div id="cal-discover-result" style="display:none;margin-bottom:1rem;font-size:0.875rem"></div>
                     <div class="field-group">
                         <label for="cal-caldav-cal">Calendar URL</label>
                         <input type="url" id="cal-caldav-cal" placeholder="https://p12-caldav.icloud.com/dav/principals/...">
-                        <p class="field-hint">Use "Find my calendars" to discover the URL, then click "Use this" next to the calendar you want.</p>
+                        <p class="field-hint">Use "Find my calendars" then click "Use this" next to the calendar you want.</p>
                     </div>
-                    <details class="cal-instructions">
-                        <summary>How to set up iCloud CalDAV sync</summary>
-                        <div class="cal-instructions-body">
-                            <p><strong>1.</strong> Your username is your Apple ID email.</p>
-                            <p><strong>2.</strong> Generate an app-specific password at <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a> → Security → App-Specific Passwords. Name it "Holly Poppins" or similar.</p>
-                            <p><strong>3.</strong> Enter the server URL (<em>https://caldav.icloud.com/</em>), your Apple ID, and the app-specific password, then click "Find my calendars".</p>
-                            <p><strong>4.</strong> Click "Use this" next to the calendar you want bookings added to.</p>
-                        </div>
-                    </details>
                 </div>
             </div>
 
@@ -936,24 +937,6 @@
                 </p>
                 <div id="approved-list"></div>
                 <button type="button" class="btn-sm" id="addTestimonialBtn" style="margin-top:0.75rem">+ Add testimonial manually</button>
-            </div>
-
-            <!-- Bookings Tab -->
-            <div id="tab-bookings" class="tab-panel">
-                <h2 class="section-heading">Pending Requests</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
-                    New booking requests from visitors. Confirm to accept and push to your calendar, or decline.
-                </p>
-                <div id="bookings-pending"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
-
-                <h2 class="section-heading" style="margin-top:2.5rem">Confirmed Bookings</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
-                    Upcoming confirmed bookings. Click Decline to cancel.
-                </p>
-                <div id="bookings-confirmed"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
-
-                <h2 class="section-heading" style="margin-top:2.5rem">Declined</h2>
-                <div id="bookings-declined"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
             </div>
 
             <!-- FAQ Tab -->
@@ -1278,9 +1261,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
-        if (btn.dataset.tab === 'calendar')       renderAdminCalendar();
-        if (btn.dataset.tab === 'testimonials') loadPendingSubmissions();
-        if (btn.dataset.tab === 'bookings')     loadBookings();
+        if (btn.dataset.tab === 'calendar')     { renderAdminCalendar(); loadBookings(); }
+        if (btn.dataset.tab === 'testimonials')  loadPendingSubmissions();
     });
 });
 
