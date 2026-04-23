@@ -70,3 +70,21 @@ const SITE_CONFIG = {
     if (c.goldLight) s.setProperty('--gold-light', c.goldLight);
     if (c.cream)     s.setProperty('--cream',      c.cream);
 })();
+
+// ── Favicon (generated from navEmoji + colors, no static file needed) ─────────
+(function () {
+    const size = 64;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = SITE_CONFIG.colors.navy || '#1B2A4A';
+    ctx.fillRect(0, 0, size, size);
+    ctx.font = '44px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(SITE_CONFIG.navEmoji || '☂', size / 2, size / 2 + 2);
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.href = canvas.toDataURL();
+    document.head.appendChild(link);
+})();
