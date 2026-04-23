@@ -763,7 +763,7 @@
                 <div class="field-group">
                     <label for="cfg-email">Email Address</label>
                     <input type="email" id="cfg-email" placeholder="you@example.com">
-                    <p class="field-hint">Shown in the footer and used for form reply-to.</p>
+                    <p class="field-hint">Shown in the site footer. Visitors can reply to notification emails at this address.</p>
                 </div>
 
                 <h2 class="section-heading">Payment</h2>
@@ -786,11 +786,11 @@
                 <div class="field-group">
                     <label>Zelle Email or Phone</label>
                     <input type="text" id="cfg-zelle" placeholder="you@email.com or (555) 000-0000">
-                    <p class="field-hint">Visitors will copy this to send you a Zelle payment. Leave blank to hide the Zelle button.</p>
+                    <p class="field-hint">Visitors tap the Zelle button to copy this to their clipboard. Leave blank to hide it.</p>
                 </div>
 
-                <h2 class="section-heading">Availability Import</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Import your free days from an existing calendar as available dates. This is a manual snapshot — re-import whenever your schedule changes.</p>
+                <h2 class="section-heading">Import Available Dates</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Import your free days from Google Calendar, iCloud, or Outlook as available dates. Re-import whenever your availability changes.</p>
                 <div class="field-group">
                     <label for="cfg-ical">iCal Feed URL</label>
                     <input type="url" id="cfg-ical" placeholder="https://calendar.google.com/calendar/ical/...">
@@ -807,8 +807,8 @@
                 <button type="button" class="btn-primary" id="syncBtn">Sync from Calendar</button>
                 <div id="syncResult" style="display:none"></div>
 
-                <h2 class="section-heading">Booking Push</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">When you confirm a booking in the Calendar tab, it can be pushed to your calendar automatically. Credentials are stored privately.</p>
+                <h2 class="section-heading">Auto-add to Calendar</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">When you confirm a booking in the Calendar tab, it can be added to your calendar automatically. Credentials are stored privately.</p>
                 <div class="field-group">
                     <label for="cal-method">Method</label>
                     <select id="cal-method" style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.9rem;background:var(--cream);color:var(--text)">
@@ -931,7 +931,7 @@
             <div id="tab-testimonials" class="tab-panel">
                 <h2 class="section-heading">Pending Submissions</h2>
                 <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
-                    References submitted by visitors. Approve to add to the public site, or reject to discard.
+                    Testimonials submitted by visitors. Approve to add to the public site, or dismiss to remove.
                 </p>
                 <div id="pending-list"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
 
@@ -947,7 +947,7 @@
             <div id="tab-faq" class="tab-panel">
                 <h2 class="section-heading">Frequently Asked Questions</h2>
                 <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
-                    Edit questions and answers shown on the public site. Drag to reorder is not supported — delete and re-add to reorder.
+                    Edit questions and answers shown on the public site. To reorder, remove and re-add items.
                 </p>
                 <div id="faq-list"></div>
                 <button type="button" class="btn-sm" id="addFaqBtn" style="margin-top:0.75rem">+ Add question</button>
@@ -1038,7 +1038,7 @@ async function loadConfig() {
         const doc = await db.collection('config').doc('settings').get();
         if (doc.exists) config = { ...DEFAULTS, ...doc.data() };
     } catch {
-        showToast('Could not load config — using defaults.', 'error');
+        showToast("Couldn't load your settings — showing defaults.", 'error');
     }
     populateUI();
 }
@@ -1356,7 +1356,7 @@ function importDates(dates, merge) {
         ? [...new Set([...(config.availableDates || []), ...dates])].sort()
         : dates;
     document.getElementById('syncResult').style.display = 'none';
-    showToast(`✓ ${dates.length} dates imported — hit Save Changes to apply.`, 'success');
+    showToast(`✓ ${dates.length} dates imported — click Save Changes to apply.`, 'success');
     document.querySelector('[data-tab="calendar"]').click();
 }
 
@@ -1385,7 +1385,7 @@ async function loadPendingSubmissions() {
                 <p class="tac-meta"><strong>${d.name}</strong>${d.role ? ' · ' + d.role : ''}</p>
                 <div class="tac-actions">
                     <button class="btn-primary tac-approve">Approve</button>
-                    <button class="btn-sm tac-reject">Reject</button>
+                    <button class="btn-sm tac-reject">Dismiss</button>
                 </div>`;
             card.querySelector('.tac-approve').addEventListener('click', () => approvePending(doc.id, d, card));
             card.querySelector('.tac-reject').addEventListener('click',  () => rejectPending(doc.id, card));
@@ -1403,23 +1403,23 @@ async function approvePending(id, data, card) {
         config.testimonials.push({ name: data.name, role: data.role || '', quote: data.quote, stars: data.stars || 5 });
         renderApprovedList();
         card.remove();
-        showToast('✓ Approved — hit Save Changes to publish.', 'success');
+        showToast('✓ Approved — click Save Changes to publish.', 'success');
         if (!document.getElementById('pending-list').querySelector('.testimonial-admin-card')) {
             document.getElementById('pending-list').innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">No pending submissions.</p>';
         }
-    } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    } catch (e) { showToast("Couldn't approve this testimonial — try again.", 'error'); }
 }
 
 async function rejectPending(id, card) {
-    if (!confirm('Discard this submission?')) return;
+    if (!confirm("Remove this testimonial? This can't be undone.")) return;
     try {
         await db.collection('testimonials').doc(id).delete();
         card.remove();
         if (!document.getElementById('pending-list').querySelector('.testimonial-admin-card')) {
             document.getElementById('pending-list').innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">No pending submissions.</p>';
         }
-        showToast('Submission discarded.', 'success');
-    } catch (e) { showToast('Error: ' + e.message, 'error'); }
+        showToast('Testimonial removed.', 'success');
+    } catch (e) { showToast("Couldn't remove this testimonial — try again.", 'error'); }
 }
 
 // ── Testimonials (approved / editable) ────────────────────────────
@@ -1681,7 +1681,7 @@ async function confirmBooking(booking) {
         calPush(booking);
         if (booking.email) sendMail('booking_confirmed', booking.email, buildVars(booking));
     } catch (e) {
-        showToast('Error confirming: ' + e.message, 'error');
+        showToast("Couldn't confirm this booking — try again.", 'error');
     }
 }
 
@@ -1692,7 +1692,7 @@ async function declineBooking(booking) {
         loadBookings();
         if (booking.email) sendMail('booking_declined', booking.email, buildVars(booking));
     } catch (e) {
-        showToast('Error: ' + e.message, 'error');
+        showToast("Couldn't decline this booking — try again.", 'error');
     }
 }
 
@@ -1702,7 +1702,7 @@ async function updateBookingStatus(id, status) {
         showToast(status === 'declined' ? 'Booking declined.' : '✓ Status updated.', 'success');
         loadBookings();
     } catch (e) {
-        showToast('Error: ' + e.message, 'error');
+        showToast("Couldn't update this booking — try again.", 'error');
     }
 }
 
@@ -1744,10 +1744,10 @@ async function calPush(booking) {
         if (data.ok && !data.skipped) {
             showToast('✓ Added to calendar.', 'success');
         } else if (!data.ok) {
-            showToast(`Calendar: ${data.error}`, 'error');
+            showToast("Couldn't add to calendar — check Settings → Auto-add to Calendar.", 'error');
         }
     } catch (e) {
-        showToast(`Calendar push failed: ${e.message}`, 'error');
+        showToast("Couldn't add to calendar — check Settings → Auto-add to Calendar.", 'error');
     }
 }
 
@@ -1796,9 +1796,9 @@ async function sendMail(type, to, vars) {
             }),
         });
         const data = await resp.json();
-        if (!data.ok) showToast(`Email: ${data.error}`, 'error');
+        if (!data.ok) showToast("Email delivery failed — check your contact email in Settings.", 'error');
     } catch (e) {
-        showToast(`Email failed: ${e.message}`, 'error');
+        showToast("Email delivery failed — check your contact email in Settings.", 'error');
     }
 }
 
