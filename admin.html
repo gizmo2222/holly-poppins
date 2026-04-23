@@ -786,32 +786,8 @@
                     <p class="field-hint">Visitors will copy this to send you a Zelle payment. Leave blank to hide the Zelle button.</p>
                 </div>
 
-
-            </div>
-
-            <!-- Calendar Tab -->
-            <div id="tab-calendar" class="tab-panel">
-
-                <h2 class="section-heading">Available Dates</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Dates marked here show as available on the public site. Visitors click a date, fill out the booking form, and you confirm or decline below. Nothing is automatically booked.</p>
-                <div class="cal-wrap">
-                    <div class="cal-header">
-                        <button class="cal-nav" id="adminCalPrev">&#8249;</button>
-                        <span class="cal-month" id="adminCalMonth"></span>
-                        <button class="cal-nav" id="adminCalNext">&#8250;</button>
-                    </div>
-                    <div class="cal-grid" id="adminCalGrid"></div>
-                    <div class="cal-footer">
-                        <span id="calCount" style="font-weight:700;color:var(--navy)">0 dates available</span>
-                        <div class="cal-actions">
-                            <button class="btn-sm" id="addWeekdaysBtn">Add weekdays</button>
-                            <button class="btn-sm" id="clearMonthBtn">Clear month</button>
-                        </div>
-                    </div>
-                </div>
-
-                <h2 class="section-heading" style="margin-top:2.5rem">Import from Calendar</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Paste an iCal URL to import your free days as available dates. This is a one-time import — re-sync whenever your schedule changes. You can still click dates above to adjust after importing.</p>
+                <h2 class="section-heading">Availability Import</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Import your free days from an existing calendar as available dates. This is a manual snapshot — re-import whenever your schedule changes.</p>
                 <div class="field-group">
                     <label for="cfg-ical">iCal Feed URL</label>
                     <input type="url" id="cfg-ical" placeholder="https://calendar.google.com/calendar/ical/...">
@@ -819,7 +795,7 @@
                 <details class="cal-instructions">
                     <summary>How to get your iCal URL</summary>
                     <div class="cal-instructions-body">
-                        <p><strong>Tip:</strong> Use a dedicated calendar for availability (e.g. "Open for Bookings") so personal events stay private. Add an event on each day you're free — the name doesn't matter.</p>
+                        <p><strong>Tip:</strong> Use a dedicated calendar (e.g. "Open for Bookings") so personal events stay private. Add an event on each day you're free — the name doesn't matter.</p>
                         <p><strong>Google Calendar:</strong> Click ⋮ next to your calendar → Settings → Integrate calendar → copy <em>Secret address in iCal format</em>.</p>
                         <p><strong>Apple iCloud:</strong> Right-click your calendar → Share Calendar → enable Public Calendar → copy the link, replace <code>webcal://</code> with <code>https://</code>.</p>
                         <p><strong>Outlook:</strong> Calendar → Settings → Shared calendars → Publish to web → copy the <em>ICS</em> link.</p>
@@ -828,18 +804,8 @@
                 <button type="button" class="btn-primary" id="syncBtn">Import</button>
                 <div id="syncResult" style="display:none"></div>
 
-                <h2 class="section-heading" style="margin-top:2.5rem">Booking Requests</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">New requests from visitors. Confirm to accept — if you have calendar integration set up below, it will be added automatically.</p>
-                <div id="bookings-pending"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
-
-                <h2 class="section-heading" style="margin-top:2.5rem">Confirmed</h2>
-                <div id="bookings-confirmed"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
-
-                <h2 class="section-heading" style="margin-top:2.5rem">Declined</h2>
-                <div id="bookings-declined"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
-
-                <h2 class="section-heading" style="margin-top:2.5rem">Calendar Integration</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Automatically add a booking to your calendar when you confirm it. Credentials are stored privately and never exposed to visitors.</p>
+                <h2 class="section-heading">Booking Push</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">When you confirm a booking in the Calendar tab, it can be pushed to your calendar automatically. Credentials are stored privately.</p>
                 <div class="field-group">
                     <label for="cal-method">Method</label>
                     <select id="cal-method" style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.9rem;background:var(--cream);color:var(--text)">
@@ -850,7 +816,6 @@
                     </select>
                 </div>
 
-                <!-- Email fields -->
                 <div id="cal-email-fields" style="display:none">
                     <div class="field-group">
                         <label for="cal-email">Deliver .ics to</label>
@@ -859,7 +824,6 @@
                     </div>
                 </div>
 
-                <!-- Google Calendar fields -->
                 <div id="cal-google-fields" style="display:none">
                     <div class="field-group">
                         <label for="cal-google-json">Service Account JSON</label>
@@ -884,7 +848,6 @@
                     </details>
                 </div>
 
-                <!-- CalDAV / iCloud fields -->
                 <div id="cal-caldav-fields" style="display:none">
                     <div class="field-group">
                         <label for="cal-caldav-url">CalDAV Server URL</label>
@@ -898,7 +861,7 @@
                     <div class="field-group">
                         <label for="cal-caldav-pass">App-Specific Password</label>
                         <input type="password" id="cal-caldav-pass" placeholder="xxxx-xxxx-xxxx-xxxx" autocomplete="off">
-                        <p class="field-hint">Generate one at <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a> → Sign-In &amp; Security → App-Specific Passwords.</p>
+                        <p class="field-hint">Generate at <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a> → Sign-In &amp; Security → App-Specific Passwords.</p>
                     </div>
                     <button type="button" class="btn-sm" id="findCalendarsBtn" style="margin-bottom:0.75rem">Find my calendars</button>
                     <div id="cal-discover-result" style="display:none;margin-bottom:1rem;font-size:0.875rem"></div>
@@ -908,6 +871,40 @@
                         <p class="field-hint">Use "Find my calendars" then click "Use this" next to the calendar you want.</p>
                     </div>
                 </div>
+
+            </div>
+
+            <!-- Calendar Tab -->
+            <div id="tab-calendar" class="tab-panel">
+
+                <h2 class="section-heading">Available Dates</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Click any date to mark it available (gold) or unavailable. Highlighted dates show as bookable on the public site. To import from an existing calendar, use Settings → Availability Import.</p>
+                <div class="cal-wrap">
+                    <div class="cal-header">
+                        <button class="cal-nav" id="adminCalPrev">&#8249;</button>
+                        <span class="cal-month" id="adminCalMonth"></span>
+                        <button class="cal-nav" id="adminCalNext">&#8250;</button>
+                    </div>
+                    <div class="cal-grid" id="adminCalGrid"></div>
+                    <div class="cal-footer">
+                        <span id="calCount" style="font-weight:700;color:var(--navy)">0 dates available</span>
+                        <div class="cal-actions">
+                            <button class="btn-sm" id="addWeekdaysBtn">Add weekdays</button>
+                            <button class="btn-sm" id="clearMonthBtn">Clear month</button>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Booking Requests</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Confirm to accept. Confirming pushes the booking to your calendar if you have that set up in Settings → Booking Push.</p>
+                <div id="bookings-pending"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Confirmed</h2>
+                <div id="bookings-confirmed"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Declined</h2>
+                <div id="bookings-declined"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
             </div>
 
             <!-- Services Tab -->
