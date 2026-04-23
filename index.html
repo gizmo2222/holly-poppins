@@ -680,6 +680,7 @@
 
         .pay-venmo { background: #008CFF; color: white; }
         .pay-cashapp { background: #00D632; color: white; }
+        .pay-zelle { background: #6D1ED4; color: white; }
         .pay-btn-icon { font-size: 1.3rem; }
 
         .pay-note {
@@ -993,6 +994,9 @@
             <a href="#" class="pay-btn pay-cashapp" target="_blank" rel="noopener" id="cashappLink">
                 <span class="pay-btn-icon">💚</span> Pay via Cash App
             </a>
+            <button class="pay-btn pay-zelle" id="zelleBtn" data-handle="">
+                <span class="pay-btn-icon">💜</span> Pay via Zelle
+            </button>
         </div>
     </div>
 </section>
@@ -1021,6 +1025,7 @@ const DEFAULTS = {
     email: '',
     venmoHandle: '',
     cashappHandle: '',
+    zelleHandle: '',
     availableDates: [],
     services: [
         { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true },
@@ -1064,10 +1069,13 @@ function applyConfig(cfg) {
     // Payment buttons
     const venmoEl   = document.getElementById('venmoLink');
     const cashappEl = document.getElementById('cashappLink');
+    const zelleEl   = document.getElementById('zelleBtn');
     if (cfg.venmoHandle)   { venmoEl.href   = `https://venmo.com/${cfg.venmoHandle}`;    venmoEl.style.display   = ''; }
     else                     venmoEl.style.display   = 'none';
     if (cfg.cashappHandle) { cashappEl.href = `https://cash.app/$${cfg.cashappHandle}`; cashappEl.style.display = ''; }
     else                     cashappEl.style.display = 'none';
+    if (cfg.zelleHandle)   { zelleEl.dataset.handle = cfg.zelleHandle; zelleEl.style.display = ''; }
+    else                     zelleEl.style.display = 'none';
 
     // Services grid
     const active = (cfg.services || DEFAULTS.services).filter(s => s.active !== false);
@@ -1202,6 +1210,16 @@ async function submitForm(form, successId, btnLabel) {
 document.getElementById('bookingForm').addEventListener('submit', e => { e.preventDefault(); submitForm(e.target, 'bookSuccess', 'Send Booking Request'); });
 document.getElementById('qaForm').addEventListener('submit',      e => { e.preventDefault(); submitForm(e.target, 'qaSuccess',   'Ask Away'); });
 document.getElementById('ratesForm').addEventListener('submit',   e => { e.preventDefault(); submitForm(e.target, 'ratesSuccess','Request Rate Info'); });
+
+// ── Zelle button ───────────────────────────────────────────────
+document.getElementById('zelleBtn').addEventListener('click', function() {
+    const handle = this.dataset.handle;
+    navigator.clipboard.writeText(handle).then(() => {
+        const orig = this.innerHTML;
+        this.innerHTML = '✓ Copied!';
+        setTimeout(() => { this.innerHTML = orig; }, 2000);
+    });
+});
 
 // ── Star picker ────────────────────────────────────────────────
 let refStarValue = 5;

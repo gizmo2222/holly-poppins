@@ -672,6 +672,11 @@
                     </div>
                     <p class="field-hint">Leave blank to hide the Cash App button.</p>
                 </div>
+                <div class="field-group">
+                    <label>Zelle Email or Phone</label>
+                    <input type="text" id="cfg-zelle" placeholder="you@email.com or (555) 000-0000">
+                    <p class="field-hint">Visitors will copy this to send you a Zelle payment. Leave blank to hide the Zelle button.</p>
+                </div>
 
                 <h2 class="section-heading">Calendar Sync</h2>
                 <div class="field-group">
@@ -795,6 +800,7 @@ const DEFAULTS = {
     email: '',
     venmoHandle: '',
     cashappHandle: '',
+    zelleHandle: '',
     availableDates: [],
     icalUrl: '',
     rates: {},
@@ -885,6 +891,7 @@ function populateUI() {
     document.getElementById('cfg-email').value        = config.email        || '';
     document.getElementById('cfg-venmo').value        = config.venmoHandle  || '';
     document.getElementById('cfg-cashapp').value      = config.cashappHandle || '';
+    document.getElementById('cfg-zelle').value        = config.zelleHandle  || '';
     document.getElementById('cfg-ical').value         = config.icalUrl      || '';
     document.getElementById('cfg-rates-notes').value  = config.ratesNotes   || '';
     renderAdminCalendar();
@@ -898,6 +905,7 @@ function harvestUI() {
     config.email         = document.getElementById('cfg-email').value.trim();
     config.venmoHandle   = document.getElementById('cfg-venmo').value.trim();
     config.cashappHandle = document.getElementById('cfg-cashapp').value.trim();
+    config.zelleHandle   = document.getElementById('cfg-zelle').value.trim();
     config.icalUrl       = document.getElementById('cfg-ical').value.trim();
     config.ratesNotes    = document.getElementById('cfg-rates-notes').value.trim();
     config.services      = readServicesFromUI();
