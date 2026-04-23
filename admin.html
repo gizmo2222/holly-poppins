@@ -1032,6 +1032,7 @@ function renderServicesList() {
                     style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-weight:700;background:var(--cream);width:100%">
                 <textarea class="svc-desc" placeholder="Description"
                     style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);width:100%;resize:vertical;min-height:60px">${svc.desc || ''}</textarea>
+                <button type="button" class="svc-delete btn-sm" style="color:var(--danger);border-color:var(--danger);margin-top:0.4rem">✕ Remove service</button>
                 <div class="rate-section">
                     <div class="rate-row">
                         <div class="field-prefix">
@@ -1054,6 +1055,11 @@ function renderServicesList() {
         `;
         row.querySelector('input[type=checkbox]').addEventListener('change', function() {
             row.classList.toggle('inactive', !this.checked);
+        });
+        row.querySelector('.svc-delete').addEventListener('click', () => {
+            config.services = readServicesFromUI();
+            config.services.splice(i, 1);
+            renderServicesList();
         });
         list.appendChild(row);
     });
