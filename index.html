@@ -151,7 +151,7 @@
         }
 
         .hero-desc {
-            color: rgba(255,255,255,0.72);
+            color: rgba(255,255,255,0.82);
             max-width: 520px;
             margin: 0 auto 2.5rem;
             font-size: 1.05rem;
@@ -443,12 +443,12 @@
 
         .form-group label {
             display: block;
-            font-size: 0.8rem;
-            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 0.875rem;
+            font-weight: 400;
             color: var(--navy);
-            margin-bottom: 0.4rem;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
+            margin-bottom: 0.5rem;
         }
 
         .form-group input,
@@ -484,6 +484,22 @@
             line-height: 1.5;
         }
 
+        /* ── Q&A form (borderless, lighter weight) ───────────── */
+        .qa-form {
+            padding-left: 1.75rem;
+            border-left: 3px solid var(--gold);
+        }
+
+        .qa-form .form-title { font-size: 1.2rem; }
+
+        /* ── Rates form (flat card, on cream) ────────────────── */
+        .rates-form {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.75rem;
+            border: 1px solid #ece8df;
+        }
+
         .success-msg {
             display: none;
             background: #eafaf1;
@@ -494,6 +510,29 @@
             font-size: 0.875rem;
             margin-top: 1rem;
         }
+
+        .field-error {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 0.78rem;
+            color: var(--red);
+            margin-top: 0.3rem;
+        }
+
+        .form-group.is-invalid input,
+        .form-group.is-invalid select,
+        .form-group.is-invalid textarea {
+            border-color: var(--red);
+            background: #fff8f8;
+        }
+
+        .ref-form-wrap .form-group.is-invalid input,
+        .ref-form-wrap .form-group.is-invalid textarea {
+            border-color: #e05070;
+            background: rgba(196,30,58,0.12);
+        }
+
+        .ref-form-wrap .field-error { color: #ff8888; }
 
         /* ── Testimonials ─────────────────────────────────── */
         #testimonials { background: var(--navy); }
@@ -535,7 +574,7 @@
 
         .testimonial-role {
             font-size: 0.78rem;
-            color: rgba(255,255,255,0.45);
+            color: rgba(255,255,255,0.65);
             margin-top: 2px;
         }
 
@@ -545,11 +584,12 @@
             border-radius: 12px;
             padding: 2rem;
             max-width: 600px;
+            margin: 0 auto;
         }
 
         .ref-form-wrap .form-title { color: var(--white); }
 
-        .ref-form-wrap .form-group label { color: rgba(255,255,255,0.75); }
+        .ref-form-wrap .form-group label { color: rgba(255,255,255,0.88); }
 
         .ref-form-wrap .form-group input,
         .ref-form-wrap .form-group textarea {
@@ -686,19 +726,25 @@
             font-size: 1rem;
             font-weight: 700;
             text-decoration: none;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
             min-width: 190px;
             justify-content: center;
         }
 
         .pay-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
             transform: translateY(-3px);
-            box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.18);
         }
 
-        .pay-venmo { background: #008CFF; color: white; }
-        .pay-cashapp { background: #00D632; color: white; }
-        .pay-zelle { background: #6D1ED4; color: white; }
+        .pay-venmo,
+        .pay-cashapp,
+        .pay-zelle {
+            background: transparent;
+            border: 1.5px solid rgba(255,255,255,0.28);
+            color: rgba(255,255,255,0.88);
+        }
         .pay-btn-icon { font-size: 1.3rem; }
 
         .pay-note {
@@ -776,7 +822,7 @@
         <p class="hero-desc" id="heroDesc">Trusted, caring, and dependable — available for nannying, pet sitting, and more. Let's find a time that works perfectly for your family.</p>
         <div class="hero-ctas">
             <a href="#book" class="btn-primary">Check Availability</a>
-            <a href="#testimonials" class="btn-outline">Read References</a>
+            <a href="#testimonials" class="btn-outline">See Testimonials</a>
         </div>
     </div>
 </section>
@@ -784,7 +830,6 @@
 <!-- ── Services ─────────────────────────────────────────────── -->
 <section id="services">
     <div class="section-inner">
-        <p class="section-label">What I Offer</p>
         <h2 class="section-title">Services</h2>
         <div class="divider"></div>
         <div class="services-grid" id="servicesGrid"></div>
@@ -794,7 +839,6 @@
 <!-- ── Book ──────────────────────────────────────────────────── -->
 <section id="book">
     <div class="section-inner">
-        <p class="section-label">Schedule</p>
         <h2 class="section-title">Check Availability &amp; Book</h2>
         <div class="divider"></div>
         <div class="book-layout">
@@ -819,7 +863,7 @@
             <div>
                 <div class="booking-form">
                     <h3 class="form-title">Request a Booking</h3>
-                    <form id="bookingForm">
+                    <form id="bookingForm" novalidate>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="b-name">Your Name *</label>
@@ -879,9 +923,13 @@
         <div class="divider"></div>
         <div class="testimonials-grid" id="testimonialsGrid"></div>
 
+        <div style="text-align:center;margin:3.5rem 0 2rem">
+            <p style="font-family:'Playfair Display',serif;font-style:italic;color:rgba(255,255,255,0.5);font-size:0.9rem;margin-bottom:0.75rem">Worked with me?</p>
+            <div class="divider" style="margin:0 auto"></div>
+        </div>
         <div class="ref-form-wrap">
             <h3 class="form-title">Leave a Reference</h3>
-            <form id="refForm">
+            <form id="refForm" novalidate>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="r-name">Your Name *</label>
@@ -920,7 +968,6 @@
 <!-- ── Q&A ────────────────────────────────────────────────────── -->
 <section id="qa">
     <div class="section-inner">
-        <p class="section-label">Questions</p>
         <h2 class="section-title">Frequently Asked Questions</h2>
         <div class="divider"></div>
         <div class="qa-layout">
@@ -929,9 +976,9 @@
             </div>
 
             <div>
-                <div class="booking-form">
+                <div class="qa-form">
                     <h3 class="form-title">Ask a Question</h3>
-                    <form id="qaForm">
+                    <form id="qaForm" novalidate>
                         <div class="form-group">
                             <label for="q-name">Your Name *</label>
                             <input type="text" id="q-name" name="name" required placeholder="Your name">
@@ -958,16 +1005,15 @@
     <div class="section-inner">
         <div class="rates-layout">
             <div class="rates-text">
-                <p class="section-label">Pricing</p>
                 <h2 class="section-title">Rates</h2>
                 <div class="divider"></div>
                 <p>Rates vary depending on the service, the number of children, hours, and any special requirements. I prefer to discuss pricing personally so I can give you an accurate, fair quote tailored to your situation.</p>
                 <p>Fill out the form and I'll get back to you promptly with a detailed breakdown — no pressure, no commitment.</p>
             </div>
             <div>
-                <div class="booking-form">
+                <div class="rates-form">
                     <h3 class="form-title">Request Rate Info</h3>
-                    <form id="ratesForm">
+                    <form id="ratesForm" novalidate>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="ra-name">Your Name *</label>
@@ -1005,7 +1051,6 @@
 <!-- ── Pay ────────────────────────────────────────────────────── -->
 <section id="pay">
     <div class="section-inner">
-        <p class="section-label" style="color:rgba(212,175,55,0.8)">Payment</p>
         <h2 class="section-title light">Pay Securely</h2>
         <div class="divider" style="margin-left:auto;margin-right:auto"></div>
         <p class="pay-desc">Payment is accepted via Venmo or Cash App. Please include your name and the date of service in the payment note — thank you!</p>
@@ -1161,6 +1206,33 @@ function sendMail(type, to, vars) {
     }).catch(() => {});
 }
 
+// ── Validation ────────────────────────────────────────────────
+function validateForm(form) {
+    form.querySelectorAll('.field-error').forEach(e => e.remove());
+    form.querySelectorAll('.form-group.is-invalid').forEach(g => g.classList.remove('is-invalid'));
+    let valid = true;
+    form.querySelectorAll('[required]').forEach(field => {
+        const group = field.closest('.form-group');
+        if (!group) return;
+        let msg = '';
+        if (!field.value.trim()) {
+            msg = 'This field is required.';
+        } else if (field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim())) {
+            msg = 'Please enter a valid email address.';
+        }
+        if (msg) {
+            group.classList.add('is-invalid');
+            const err = document.createElement('p');
+            err.className = 'field-error';
+            err.textContent = msg;
+            group.appendChild(err);
+            valid = false;
+        }
+    });
+    if (!valid) form.querySelector('.form-group.is-invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return valid;
+}
+
 // ── Calendar ───────────────────────────────────────────────────
 const MONTHS = ['January','February','March','April','May','June',
                 'July','August','September','October','November','December'];
@@ -1252,6 +1324,7 @@ async function submitForm(form, successId, btnLabel) {
 document.getElementById('bookingForm').addEventListener('submit', async e => {
     e.preventDefault();
     const form    = e.target;
+    if (!validateForm(form)) return;
     const btn     = form.querySelector('button[type=submit]');
     const name    = document.getElementById('b-name').value.trim();
     const email   = document.getElementById('b-email').value.trim();
@@ -1276,6 +1349,7 @@ document.getElementById('bookingForm').addEventListener('submit', async e => {
 document.getElementById('qaForm').addEventListener('submit', e => {
     e.preventDefault();
     const form     = e.target;
+    if (!validateForm(form)) return;
     const name     = document.getElementById('q-name').value.trim();
     const email    = document.getElementById('q-email').value.trim();
     const question = document.getElementById('q-question').value.trim();
@@ -1292,6 +1366,7 @@ document.getElementById('qaForm').addEventListener('submit', e => {
 document.getElementById('ratesForm').addEventListener('submit', e => {
     e.preventDefault();
     const form    = e.target;
+    if (!validateForm(form)) return;
     const name    = document.getElementById('ra-name').value.trim();
     const email   = document.getElementById('ra-email').value.trim();
     const service = document.getElementById('ra-service').value;
@@ -1335,6 +1410,7 @@ let refStarValue = 5;
 document.getElementById('refForm').addEventListener('submit', async e => {
     e.preventDefault();
     const form   = e.target;
+    if (!validateForm(form)) return;
     const btn    = form.querySelector('button[type=submit]');
     const rName  = document.getElementById('r-name').value.trim();
     const rEmail = document.getElementById('r-email').value.trim();
@@ -1371,6 +1447,19 @@ function initFaqAccordion() {
         });
     });
 }
+
+// ── Clear validation errors on input ──────────────────────────
+document.querySelectorAll('form').forEach(form => {
+    ['input', 'change'].forEach(evt => {
+        form.addEventListener(evt, e => {
+            const g = e.target.closest('.form-group');
+            if (g?.classList.contains('is-invalid')) {
+                g.classList.remove('is-invalid');
+                g.querySelectorAll('.field-error').forEach(el => el.remove());
+            }
+        });
+    });
+});
 
 // ── Meta (from site-config.js) ─────────────────────────────────
 function applyMeta() {

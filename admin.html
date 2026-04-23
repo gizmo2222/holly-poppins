@@ -801,7 +801,7 @@
                         <p><strong>Outlook:</strong> Calendar → Settings → Shared calendars → Publish to web → copy the <em>ICS</em> link.</p>
                     </div>
                 </details>
-                <button type="button" class="btn-primary" id="syncBtn">Import</button>
+                <button type="button" class="btn-primary" id="syncBtn">Sync from Calendar</button>
                 <div id="syncResult" style="display:none"></div>
 
                 <h2 class="section-heading">Booking Push</h2>
@@ -1354,7 +1354,7 @@ function importDates(dates, merge) {
         : dates;
     document.getElementById('syncResult').style.display = 'none';
     showToast(`✓ ${dates.length} dates imported — hit Save Changes to apply.`, 'success');
-    document.querySelector('[data-tab="availability"]').click();
+    document.querySelector('[data-tab="calendar"]').click();
 }
 
 // ── Testimonials (pending submissions) ────────────────────────────
