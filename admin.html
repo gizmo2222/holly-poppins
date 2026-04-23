@@ -588,6 +588,36 @@
             margin-bottom: 0.6rem;
         }
 
+        /* ── Rate section (inside service rows) ─────────────── */
+        .rate-section {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px dashed #ece8df;
+        }
+
+        .rate-row {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 0.4rem;
+        }
+
+        .rate-row .field-prefix { flex: 1; min-width: 100px; }
+
+        .rate-public-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .rate-public-label input { cursor: pointer; }
+
         /* ── Responsive ─────────────────────────────────────── */
         @media (max-width: 600px) {
             .admin-header { padding: 0 1rem; }
@@ -638,7 +668,6 @@
         <button class="tab-btn active" data-tab="settings">Settings</button>
         <button class="tab-btn" data-tab="availability">Availability</button>
         <button class="tab-btn" data-tab="services">Services</button>
-        <button class="tab-btn" data-tab="rates">Rates</button>
         <button class="tab-btn" data-tab="testimonials">Testimonials</button>
         <button class="tab-btn" data-tab="faq">FAQ</button>
     </nav>
@@ -729,22 +758,6 @@
                 <button type="button" class="btn-sm" id="addServiceBtn" style="margin-top:0.75rem">+ Add service</button>
             </div>
 
-            <!-- Rates Tab -->
-            <div id="tab-rates" class="tab-panel">
-                <h2 class="section-heading">Your Rates</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
-                    For your reference only — these are never shown on the public site.
-                    Use them to stay consistent when responding to rate requests.
-                </p>
-                <div id="rates-list"></div>
-                <div class="field-group" style="margin-top:1.5rem">
-                    <label for="cfg-rates-notes">General Notes</label>
-                    <textarea id="cfg-rates-notes" rows="4"
-                        placeholder="e.g. Weekend surcharge +$5/hr · Holiday rate 1.5× · Mileage over 10 miles billed at $0.67/mi"></textarea>
-                    <p class="field-hint">Anything that applies across services — minimums, surcharges, policies, etc.</p>
-                </div>
-            </div>
-
             <!-- Testimonials Tab -->
             <div id="tab-testimonials" class="tab-panel">
                 <h2 class="section-heading">Pending Submissions</h2>
@@ -798,8 +811,6 @@ const DEFAULTS = {
     zelleHandle: '',
     availableDates: [],
     icalUrl: '',
-    rates: {},
-    ratesNotes: '',
     testimonials: SITE_CONFIG.defaultTestimonials,
     faq:          SITE_CONFIG.defaultFaq,
     services:     SITE_CONFIG.defaultServices
@@ -885,10 +896,8 @@ function populateUI() {
     document.getElementById('cfg-cashapp').value      = config.cashappHandle || '';
     document.getElementById('cfg-zelle').value        = config.zelleHandle  || '';
     document.getElementById('cfg-ical').value         = config.icalUrl      || '';
-    document.getElementById('cfg-rates-notes').value  = config.ratesNotes   || '';
     renderAdminCalendar();
     renderServicesList();
-    renderRatesList();
     renderApprovedList();
     renderFaqList();
 }
@@ -899,9 +908,7 @@ function harvestUI() {
     config.cashappHandle = document.getElementById('cfg-cashapp').value.trim();
     config.zelleHandle   = document.getElementById('cfg-zelle').value.trim();
     config.icalUrl       = document.getElementById('cfg-ical').value.trim();
-    config.ratesNotes    = document.getElementById('cfg-rates-notes').value.trim();
     config.services      = readServicesFromUI();
-    config.rates         = readRatesFromUI();
     config.testimonials  = readApprovedFromUI();
     config.faq           = readFaqFromUI();
     // availableDates kept in sync on every click
@@ -1006,7 +1013,8 @@ function addWeekdays() {
 function renderServicesList() {
     const list = document.getElementById('services-list');
     list.innerHTML = '';
-    config.services.forEach((svc, i) => {
+    (config.services || []).forEach((svc, i) => {
+        const r = svc.rate || {};
         const row = document.createElement('div');
         row.className = `service-row${svc.active ? '' : ' inactive'}`;
         row.dataset.index = i;
@@ -1015,12 +1023,30 @@ function renderServicesList() {
                 <input type="checkbox" ${svc.active ? 'checked' : ''}>
                 <span class="toggle-slider"></span>
             </label>
-            <input class="svc-icon-input" type="text" value="${svc.icon}" maxlength="2" title="Icon (emoji)">
+            <input class="svc-icon-input" type="text" value="${svc.icon || ''}" maxlength="2" title="Icon (emoji)">
             <div class="svc-fields">
-                <input class="svc-name" type="text" value="${svc.name}" placeholder="Service name"
+                <input class="svc-name" type="text" value="${svc.name || ''}" placeholder="Service name"
                     style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-weight:700;background:var(--cream);width:100%">
-                <textarea placeholder="Description"
-                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);width:100%;resize:vertical;min-height:60px">${svc.desc}</textarea>
+                <textarea class="svc-desc" placeholder="Description"
+                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);width:100%;resize:vertical;min-height:60px">${svc.desc || ''}</textarea>
+                <div class="rate-section">
+                    <div class="rate-row">
+                        <div class="field-prefix">
+                            <span class="field-prefix-label">$/hr</span>
+                            <input type="number" class="rate-base" min="0" step="0.50" value="${r.base || ''}" placeholder="—">
+                        </div>
+                        <div class="field-prefix">
+                            <span class="field-prefix-label">min hrs</span>
+                            <input type="number" class="rate-min" min="0" step="0.5" value="${r.min || ''}" placeholder="—">
+                        </div>
+                        <label class="rate-public-label">
+                            <input type="checkbox" class="rate-public" ${r.public ? 'checked' : ''}>
+                            Show rate publicly
+                        </label>
+                    </div>
+                    <textarea class="rate-notes" rows="2" placeholder="Rate notes (e.g. +$10 for 2+ kids)"
+                        style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--cream);width:100%;resize:vertical">${r.notes || ''}</textarea>
+                </div>
             </div>
         `;
         row.querySelector('input[type=checkbox]').addEventListener('change', function() {
@@ -1031,74 +1057,27 @@ function renderServicesList() {
 }
 
 function readServicesFromUI() {
-    return Array.from(document.querySelectorAll('.service-row')).map((row, i) => ({
-        ...config.services[i],
+    return Array.from(document.querySelectorAll('#services-list .service-row')).map((row, i) => ({
+        ...(config.services[i] || {}),
         active: row.querySelector('input[type=checkbox]').checked,
         icon:   row.querySelector('.svc-icon-input').value,
         name:   row.querySelector('.svc-name').value,
-        desc:   row.querySelector('textarea').value,
+        desc:   row.querySelector('.svc-desc').value,
+        rate: {
+            base:   row.querySelector('.rate-base').value.trim(),
+            min:    row.querySelector('.rate-min').value.trim(),
+            notes:  row.querySelector('.rate-notes').value.trim(),
+            public: row.querySelector('.rate-public').checked,
+        },
     }));
 }
 
 document.getElementById('addServiceBtn').addEventListener('click', () => {
     config.services = readServicesFromUI();
-    config.services.push({ id: 'svc_' + Date.now(), icon: '✨', name: '', desc: '', active: true });
+    config.services.push({ id: 'svc_' + Date.now(), icon: '✨', name: '', desc: '', active: true, rate: { base: '', min: '', notes: '', public: false } });
     renderServicesList();
     document.getElementById('services-list').lastElementChild?.querySelector('.svc-name')?.focus();
 });
-
-// ── Rates ─────────────────────────────────────────────────────────
-function renderRatesList() {
-    const list = document.getElementById('rates-list');
-    const services = config.services.filter(s => s.active !== false);
-    list.innerHTML = services.map(svc => {
-        const r = (config.rates || {})[svc.id] || {};
-        return `
-        <div class="service-row" style="grid-template-columns:50px 1fr;gap:1rem;align-items:start" data-rate-id="${svc.id}">
-            <span style="font-size:1.75rem;text-align:center;padding-top:0.25rem">${svc.icon}</span>
-            <div>
-                <p style="font-weight:700;color:var(--navy);margin-bottom:0.75rem">${svc.name}</p>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.5rem">
-                    <div class="field-group" style="margin:0">
-                        <label>Base Rate</label>
-                        <div class="field-prefix">
-                            <span class="field-prefix-label">$/hr</span>
-                            <input type="number" class="rate-base" min="0" step="0.50"
-                                value="${r.base || ''}" placeholder="0.00">
-                        </div>
-                    </div>
-                    <div class="field-group" style="margin:0">
-                        <label>Min. Hours</label>
-                        <div class="field-prefix">
-                            <span class="field-prefix-label">hrs</span>
-                            <input type="number" class="rate-min" min="0" step="0.5"
-                                value="${r.min || ''}" placeholder="—">
-                        </div>
-                    </div>
-                </div>
-                <div class="field-group" style="margin:0">
-                    <label>Notes</label>
-                    <textarea class="rate-notes" rows="2"
-                        placeholder="e.g. +$10 for 2+ kids, overnight rate $75 flat"
-                        style="font-size:0.85rem">${r.notes || ''}</textarea>
-                </div>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-function readRatesFromUI() {
-    const rates = {};
-    document.querySelectorAll('[data-rate-id]').forEach(row => {
-        const id = row.dataset.rateId;
-        rates[id] = {
-            base:  row.querySelector('.rate-base').value.trim(),
-            min:   row.querySelector('.rate-min').value.trim(),
-            notes: row.querySelector('.rate-notes').value.trim(),
-        };
-    });
-    return rates;
-}
 
 // ── Tabs ──────────────────────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {

@@ -36,11 +36,11 @@ const SITE_CONFIG = {
     // Shown before the admin has saved anything to Firestore.
 
     defaultServices: [
-        { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true },
-        { id: 'petsitting', icon: '🐾', name: 'Pet Sitting',             desc: "Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.",    active: true },
-        { id: 'activities', icon: '🎨', name: 'Activities & Enrichment', desc: 'Creative play, arts & crafts, outdoor adventures, and age-appropriate educational experiences.',                active: true },
-        { id: 'household',  icon: '🏠', name: 'Household Support',       desc: 'Light tidying, meal prep, school pickups, and errands to keep the family day running smoothly.',                 active: true },
-        { id: 'tutoring',   icon: '📚', name: 'Tutoring',                desc: 'Patient, encouraging academic support across subjects — homework help, test prep, and building study skills.',          active: true },
+        { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true, rate: { base: '', min: '', notes: '', public: false } },
+        { id: 'petsitting', icon: '🐾', name: 'Pet Sitting',             desc: "Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.",    active: true, rate: { base: '', min: '', notes: '', public: false } },
+        { id: 'activities', icon: '🎨', name: 'Activities & Enrichment', desc: 'Creative play, arts & crafts, outdoor adventures, and age-appropriate educational experiences.',                active: true, rate: { base: '', min: '', notes: '', public: false } },
+        { id: 'household',  icon: '🏠', name: 'Household Support',       desc: 'Light tidying, meal prep, school pickups, and errands to keep the family day running smoothly.',                 active: true, rate: { base: '', min: '', notes: '', public: false } },
+        { id: 'tutoring',   icon: '📚', name: 'Tutoring',                desc: 'Patient, encouraging academic support across subjects — homework help, test prep, and building study skills.',   active: true, rate: { base: '', min: '', notes: '', public: false } },
     ],
 
     defaultTestimonials: [

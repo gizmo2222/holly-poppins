@@ -285,6 +285,23 @@
             line-height: 1.65;
         }
 
+        .service-rate {
+            margin-top: 0.9rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #ece8df;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .service-rate-note {
+            display: block;
+            font-weight: 400;
+            color: var(--text-light);
+            margin-top: 0.2rem;
+            font-size: 0.8rem;
+        }
+
         /* ── Book / Calendar ──────────────────────────────── */
         #book { background: var(--cream); }
 
@@ -1056,12 +1073,19 @@ function applyConfig(cfg) {
 
     // Services grid
     const active = (cfg.services || DEFAULTS.services).filter(s => s.active !== false);
-    document.getElementById('servicesGrid').innerHTML = active.map(s => `
+    document.getElementById('servicesGrid').innerHTML = active.map(s => {
+        const r = s.rate;
+        const rateHtml = (r && r.public && r.base)
+            ? `<p class="service-rate">$${r.base}/hr${r.min ? ' · ' + r.min + ' hr min' : ''}${r.notes ? '<span class="service-rate-note">' + r.notes + '</span>' : ''}</p>`
+            : '';
+        return `
         <div class="service-card">
             <span class="service-icon">${s.icon}</span>
             <h3 class="service-name">${s.name}</h3>
             <p class="service-desc">${s.desc}</p>
-        </div>`).join('');
+            ${rateHtml}
+        </div>`;
+    }).join('');
 
     // Service dropdowns
     const opts = ['<option value="">Select...</option>',
