@@ -487,6 +487,19 @@
         #toast.success { background: var(--success); color: white; }
         #toast.error   { background: var(--danger);  color: white; }
 
+        /* ── Info box ───────────────────────────────────────── */
+        .info-box {
+            background: #f4f1ea;
+            border-left: 3px solid var(--gold);
+            border-radius: 0 6px 6px 0;
+            padding: 1rem 1.1rem;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            line-height: 1.65;
+        }
+
+        .info-box strong { color: var(--navy); }
+
         /* ── Calendar Sync ──────────────────────────────────── */
         .cal-instructions {
             margin-bottom: 1rem;
@@ -711,10 +724,19 @@
                 </div>
 
                 <h2 class="section-heading">Calendar Sync</h2>
-                <div class="field-group">
+                <div class="info-box">
+                    <p><strong>How availability works:</strong> The public site shows a calendar of dates you've marked available. Visitors pick a date and submit a booking request — you confirm or decline. Nothing is booked automatically.</p>
+                    <p style="margin-top:0.5rem"><strong>Two ways to set available dates:</strong></p>
+                    <ul style="margin:0.4rem 0 0 1.25rem;display:flex;flex-direction:column;gap:0.3rem">
+                        <li><strong>Manual</strong> — go to the Availability tab and click dates on or off.</li>
+                        <li><strong>Calendar sync</strong> — paste your iCal URL below and click Sync. Dates from your calendar events are imported as available dates. Use this if you already manage your schedule in Google, Apple, or Outlook calendar.</li>
+                    </ul>
+                    <p style="margin-top:0.5rem"><strong>Sync is a manual snapshot, not a live feed.</strong> It reads your calendar once when you click the button. Re-sync whenever your schedule changes — start of each month is a good habit.</p>
+                </div>
+                <div class="field-group" style="margin-top:1.25rem">
                     <label for="cfg-ical">iCal Feed URL</label>
                     <input type="url" id="cfg-ical" placeholder="https://calendar.google.com/calendar/ical/...">
-                    <p class="field-hint">Paste your public iCal URL. Events in the feed will be imported as available dates.</p>
+                    <p class="field-hint">Leave blank if you prefer to set availability manually in the Availability tab.</p>
                 </div>
                 <details class="cal-instructions">
                     <summary>How to get your iCal URL</summary>
@@ -731,9 +753,11 @@
             <!-- Availability Tab -->
             <div id="tab-availability" class="tab-panel">
                 <h2 class="section-heading">Available Dates</h2>
-                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
-                    Click any date to mark it available (gold) or unavailable. Hit Save Changes when done.
-                </p>
+                <div class="info-box" style="margin-bottom:1.5rem">
+                    <p>This is your availability calendar — the dates shown here in gold are what visitors see on the public site. Click any date to toggle it on or off, then hit <strong>Save Changes</strong>.</p>
+                    <p style="margin-top:0.5rem"><strong>Shortcuts:</strong> <em>Add weekdays</em> marks every weekday in the current month available. <em>Clear month</em> removes all dates in the current month. Use the arrows to move between months.</p>
+                    <p style="margin-top:0.5rem"><strong>Using calendar sync?</strong> After syncing from Settings, your imported dates will appear here. You can still click to fine-tune — add a day the sync missed, or remove one you're no longer free.</p>
+                </div>
                 <div class="cal-wrap">
                     <div class="cal-header">
                         <button class="cal-nav" id="adminCalPrev">&#8249;</button>
