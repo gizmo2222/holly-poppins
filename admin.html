@@ -723,40 +723,14 @@
                     <p class="field-hint">Visitors will copy this to send you a Zelle payment. Leave blank to hide the Zelle button.</p>
                 </div>
 
-                <h2 class="section-heading">Calendar Sync</h2>
-                <div class="info-box">
-                    <p><strong>How availability works:</strong> The public site shows a calendar of dates you've marked available. Visitors pick a date and submit a booking request — you confirm or decline. Nothing is booked automatically.</p>
-                    <p style="margin-top:0.5rem"><strong>Two ways to set available dates:</strong></p>
-                    <ul style="margin:0.4rem 0 0 1.25rem;display:flex;flex-direction:column;gap:0.3rem">
-                        <li><strong>Manual</strong> — go to the Availability tab and click dates on or off.</li>
-                        <li><strong>Calendar sync</strong> — paste your iCal URL below and click Sync. Dates from your calendar events are imported as available dates. Use this if you already manage your schedule in Google, Apple, or Outlook calendar.</li>
-                    </ul>
-                    <p style="margin-top:0.5rem"><strong>Sync is a manual snapshot, not a live feed.</strong> It reads your calendar once when you click the button. Re-sync whenever your schedule changes — start of each month is a good habit.</p>
-                </div>
-                <div class="field-group" style="margin-top:1.25rem">
-                    <label for="cfg-ical">iCal Feed URL</label>
-                    <input type="url" id="cfg-ical" placeholder="https://calendar.google.com/calendar/ical/...">
-                    <p class="field-hint">Leave blank if you prefer to set availability manually in the Availability tab.</p>
-                </div>
-                <details class="cal-instructions">
-                    <summary>How to get your iCal URL</summary>
-                    <div class="cal-instructions-body">
-                        <p><strong>Google Calendar:</strong> Open Google Calendar → click ⋮ next to your calendar → Settings → scroll to "Integrate calendar" → copy <em>Secret address in iCal format</em>.</p>
-                        <p><strong>Apple iCloud:</strong> Open Calendar → right-click your calendar → Share Calendar → enable Public Calendar → copy the link, then replace <code>webcal://</code> with <code>https://</code>.</p>
-                        <p><strong>Outlook:</strong> Outlook.com → Calendar → Settings → View all Outlook settings → Calendar → Shared calendars → Publish to web → copy the <em>ICS</em> link.</p>
-                    </div>
-                </details>
-                <button type="button" class="btn-primary" id="syncBtn">Sync from Calendar</button>
-                <div id="syncResult" style="display:none"></div>
             </div>
 
             <!-- Availability Tab -->
             <div id="tab-availability" class="tab-panel">
                 <h2 class="section-heading">Available Dates</h2>
                 <div class="info-box" style="margin-bottom:1.5rem">
-                    <p>This is your availability calendar — the dates shown here in gold are what visitors see on the public site. Click any date to toggle it on or off, then hit <strong>Save Changes</strong>.</p>
-                    <p style="margin-top:0.5rem"><strong>Shortcuts:</strong> <em>Add weekdays</em> marks every weekday in the current month available. <em>Clear month</em> removes all dates in the current month. Use the arrows to move between months.</p>
-                    <p style="margin-top:0.5rem"><strong>Using calendar sync?</strong> After syncing from Settings, your imported dates will appear here. You can still click to fine-tune — add a day the sync missed, or remove one you're no longer free.</p>
+                    <p><strong>How it works:</strong> Dates you mark here appear highlighted on the public site. Visitors click a date and submit a booking request — you confirm or decline. Nothing is booked automatically.</p>
+                    <p style="margin-top:0.5rem">Click any date to toggle it available (gold) or unavailable. <strong>Add weekdays</strong> marks every weekday in the current month. <strong>Clear month</strong> removes all dates in the current month. Hit <strong>Save Changes</strong> when done.</p>
                 </div>
                 <div class="cal-wrap">
                     <div class="cal-header">
@@ -773,6 +747,28 @@
                         </div>
                     </div>
                 </div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Calendar Sync</h2>
+                <div class="info-box" style="margin-bottom:1.25rem">
+                    <p><strong>Sync is a manual snapshot, not a live feed.</strong> It reads your calendar once when you click the button — re-sync whenever your schedule changes. A good habit is to sync at the start of each month.</p>
+                    <p style="margin-top:0.5rem"><strong>How to mark available time in your calendar:</strong> Create a dedicated calendar just for availability (e.g. "Availability" or "Open for Bookings") — keep it separate from your personal calendar so private events don't get imported. Add an event on each day you're free. The event name doesn't matter. Then paste that calendar's iCal URL below and sync.</p>
+                    <p style="margin-top:0.5rem">After syncing, dates appear in the calendar above. You can still click to fine-tune — add a day the sync missed or remove one you're no longer free.</p>
+                </div>
+                <div class="field-group">
+                    <label for="cfg-ical">iCal Feed URL</label>
+                    <input type="url" id="cfg-ical" placeholder="https://calendar.google.com/calendar/ical/...">
+                    <p class="field-hint">Leave blank if you prefer to set availability manually using the calendar above.</p>
+                </div>
+                <details class="cal-instructions">
+                    <summary>How to get your iCal URL</summary>
+                    <div class="cal-instructions-body">
+                        <p><strong>Google Calendar:</strong> Open Google Calendar → click ⋮ next to your calendar → Settings → scroll to "Integrate calendar" → copy <em>Secret address in iCal format</em>.</p>
+                        <p><strong>Apple iCloud:</strong> Open Calendar → right-click your calendar → Share Calendar → enable Public Calendar → copy the link, then replace <code>webcal://</code> with <code>https://</code>.</p>
+                        <p><strong>Outlook:</strong> Outlook.com → Calendar → Settings → View all Outlook settings → Calendar → Shared calendars → Publish to web → copy the <em>ICS</em> link.</p>
+                    </div>
+                </details>
+                <button type="button" class="btn-primary" id="syncBtn">Sync from Calendar</button>
+                <div id="syncResult" style="display:none"></div>
             </div>
 
             <!-- Services Tab -->
