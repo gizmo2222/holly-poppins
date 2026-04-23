@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Holly Poppins</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="site-config.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
@@ -734,7 +735,7 @@
 <!-- ── Navigation ──────────────────────────────────────────── -->
 <nav>
     <div class="nav-inner">
-        <a href="#hero" class="nav-logo">☂ Holly Poppins</a>
+        <a href="#hero" class="nav-logo" id="navLogo">☂ Holly Poppins</a>
         <ul class="nav-links" id="navLinks">
             <li><a href="#services">Services</a></li>
             <li><a href="#book">Book Me</a></li>
@@ -752,10 +753,10 @@
 <!-- ── Hero ────────────────────────────────────────────────── -->
 <section id="hero">
     <div class="hero-content">
-        <span class="hero-umbrella">☂</span>
-        <h1 class="hero-title"><span>Holly</span> Poppins</h1>
-        <p class="hero-tagline">"Practically Perfect in Every Way"</p>
-        <p class="hero-desc">Trusted, caring, and dependable — available for nannying, pet sitting, and more. Let's find a time that works perfectly for your family.</p>
+        <span class="hero-umbrella" id="heroUmbrella">☂</span>
+        <h1 class="hero-title" id="heroTitle"><span>Holly</span> Poppins</h1>
+        <p class="hero-tagline" id="heroTagline">"Practically Perfect in Every Way"</p>
+        <p class="hero-desc" id="heroDesc">Trusted, caring, and dependable — available for nannying, pet sitting, and more. Let's find a time that works perfectly for your family.</p>
         <div class="hero-ctas">
             <a href="#book" class="btn-primary">Check Availability</a>
             <a href="#testimonials" class="btn-outline">Read References</a>
@@ -1003,49 +1004,25 @@
 
 <!-- ── Footer ─────────────────────────────────────────────────── -->
 <footer>
-    <p>☂ Holly Poppins &nbsp;·&nbsp; <a href="mailto:hello@example.com" id="footerEmail">hello@example.com</a></p>
+    <p><span id="footerSiteName">☂ Holly Poppins</span> &nbsp;·&nbsp; <a href="mailto:hello@example.com" id="footerEmail">hello@example.com</a></p>
     <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.6">© 2026 Holly Poppins. All rights reserved.</p>
 </footer>
 
 <script>
 // ── Firebase ───────────────────────────────────────────────────
-const firebaseConfig = {
-    apiKey: "AIzaSyB5izE8G_gXRRW-RRt54bT6eyqxaxP-14U",
-    authDomain: "holly-poppins.firebaseapp.com",
-    projectId: "holly-poppins",
-    storageBucket: "holly-poppins.firebasestorage.app",
-    messagingSenderId: "642721769952",
-    appId: "1:642721769952:web:602735a6e48903612e2385"
-};
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(SITE_CONFIG.firebase);
 const db = firebase.firestore();
 
 // ── Defaults ───────────────────────────────────────────────────
 const DEFAULTS = {
-    email: '',
-    venmoHandle: '',
+    email:         '',
+    venmoHandle:   '',
     cashappHandle: '',
-    zelleHandle: '',
+    zelleHandle:   '',
     availableDates: [],
-    services: [
-        { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true },
-        { id: 'petsitting', icon: '🐾', name: 'Pet Sitting',             desc: "Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.",    active: true },
-        { id: 'activities', icon: '🎨', name: 'Activities & Enrichment', desc: 'Creative play, arts & crafts, outdoor adventures, and age-appropriate educational experiences.',                active: true },
-        { id: 'household',  icon: '🏠', name: 'Household Support',       desc: 'Light tidying, meal prep, school pickups, and errands to keep the family day running smoothly.',                 active: true },
-    ],
-    testimonials: [
-        { name: 'The Harrison Family', role: 'Nanny Client · 3 years', quote: 'Holly has been an absolute blessing for our family. Reliable, warm, and wonderful with our children — we could not recommend her more highly.', stars: 5 },
-        { name: 'Amanda & Tom R.',     role: 'Pet Sitting Client',      quote: 'Our dog absolutely adores her. We never worry when Holly is on the job — she sends updates and treats our pup like her own.',                    stars: 5 },
-        { name: 'Jessica M.',          role: 'Childcare Client',        quote: 'Dependable, caring, and great with kids of all ages. We felt completely at ease leaving our little ones in her care.',                          stars: 5 },
-    ],
-    faq: [
-        { q: 'What ages do you work with?',              a: 'I work with children from infants through high school age. I also offer pet sitting for dogs, cats, and other small animals, and have experience with a wide range of personalities and needs.' },
-        { q: 'What are your typical hours?',             a: "My availability varies week to week — the calendar on this page always reflects my current open dates. I'm generally available mornings and afternoons, with some evenings. Weekend availability is limited but possible." },
-        { q: 'Do you do overnights or travel nannying?', a: 'Yes, on a case-by-case basis. Please include details in your booking request or reach out directly so we can discuss arrangements and rates.' },
-        { q: 'Are you CPR / First Aid certified?',       a: "Yes — I hold current CPR and First Aid certification. Safety is always the top priority, and I'm happy to share documentation upon request." },
-        { q: 'How does payment work?',                   a: 'Payment is accepted via Venmo or Cash App, typically at the end of each session. Recurring clients may arrange weekly invoicing. See the Pay section below for links.' },
-        { q: 'How do I cancel or reschedule?',           a: "Life happens! Please give at least 24 hours notice when possible. Just reply to your confirmation email or use the Ask a Question form to reach me." },
-    ]
+    services:     SITE_CONFIG.defaultServices,
+    testimonials: SITE_CONFIG.defaultTestimonials,
+    faq:          SITE_CONFIG.defaultFaq,
 };
 
 let AVAILABLE_DATES = [];
@@ -1274,7 +1251,22 @@ function initFaqAccordion() {
     });
 }
 
+// ── Meta (from site-config.js) ─────────────────────────────────
+function applyMeta() {
+    const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
+    document.title = n;
+    document.getElementById('navLogo').innerHTML = `${e} ${n}`;
+    document.getElementById('heroUmbrella').textContent = e;
+    const [first, ...rest] = n.split(' ');
+    document.getElementById('heroTitle').innerHTML = rest.length
+        ? `<span>${first}</span> ${rest.join(' ')}` : `<span>${first}</span>`;
+    document.getElementById('heroTagline').textContent = `"${SITE_CONFIG.tagline}"`;
+    document.getElementById('heroDesc').textContent    = SITE_CONFIG.heroDesc;
+    document.getElementById('footerSiteName').textContent = `${e} ${n}`;
+}
+
 // ── Init ───────────────────────────────────────────────────────
+applyMeta();
 loadConfig();
 </script>
 </body>

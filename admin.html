@@ -603,8 +603,8 @@
 <div id="screen-login">
     <div class="login-box">
         <div class="login-logo">
-            <span class="umbrella">☂</span>
-            <h1>Holly Poppins</h1>
+            <span class="umbrella" id="loginUmbrella">☂</span>
+            <h1 id="loginTitle">Holly Poppins</h1>
             <p>Admin Panel</p>
         </div>
         <form id="loginForm">
@@ -625,7 +625,7 @@
 <!-- ── Admin Panel ────────────────────────────────────────────── -->
 <div id="screen-admin">
     <header class="admin-header">
-        <span class="admin-logo">☂ Holly Poppins Admin</span>
+        <span class="admin-logo" id="adminLogo">☂ Holly Poppins Admin</span>
         <div class="admin-header-right">
             <span class="admin-user" id="adminUserEmail"></span>
             <a href="https://hollypoppins.com" class="view-site-link" target="_blank">View Site ↗</a>
@@ -776,6 +776,8 @@
 
 <div id="toast"></div>
 
+<!-- Site config -->
+<script src="site-config.js"></script>
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -783,15 +785,7 @@
 
 <script>
 // ── Firebase ─────────────────────────────────────────────────────
-const firebaseConfig = {
-    apiKey: "AIzaSyB5izE8G_gXRRW-RRt54bT6eyqxaxP-14U",
-    authDomain: "holly-poppins.firebaseapp.com",
-    projectId: "holly-poppins",
-    storageBucket: "holly-poppins.firebasestorage.app",
-    messagingSenderId: "642721769952",
-    appId: "1:642721769952:web:602735a6e48903612e2385"
-};
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(SITE_CONFIG.firebase);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
@@ -805,26 +799,23 @@ const DEFAULTS = {
     icalUrl: '',
     rates: {},
     ratesNotes: '',
-    testimonials: [],
-    faq: [
-        { q: 'What ages do you work with?',              a: 'I work with children from infants through high school age. I also offer pet sitting for dogs, cats, and other small animals, and have experience with a wide range of personalities and needs.' },
-        { q: 'What are your typical hours?',             a: "My availability varies week to week — the calendar on this page always reflects my current open dates. I'm generally available mornings and afternoons, with some evenings. Weekend availability is limited but possible." },
-        { q: 'Do you do overnights or travel nannying?', a: 'Yes, on a case-by-case basis. Please include details in your booking request or reach out directly so we can discuss arrangements and rates.' },
-        { q: 'Are you CPR / First Aid certified?',       a: "Yes — I hold current CPR and First Aid certification. Safety is always the top priority, and I'm happy to share documentation upon request." },
-        { q: 'How does payment work?',                   a: 'Payment is accepted via Venmo or Cash App, typically at the end of each session. Recurring clients may arrange weekly invoicing. See the Pay section below for links.' },
-        { q: 'How do I cancel or reschedule?',           a: "Life happens! Please give at least 24 hours notice when possible. Just reply to your confirmation email or use the Ask a Question form to reach me." },
-    ],
-    services: [
-        { id: 'nanny',      icon: '👶', name: 'Nanny & Childcare',       desc: 'Attentive, nurturing care for children of all ages — meals, activities, homework help, and bedtime routines.', active: true },
-        { id: 'petsitting', icon: '🐾', name: 'Pet Sitting',             desc: "Loving, attentive care for your pets while you're away — feeding, walks, playtime, and plenty of cuddles.",    active: true },
-        { id: 'activities', icon: '🎨', name: 'Activities & Enrichment', desc: 'Creative play, arts & crafts, outdoor adventures, and age-appropriate educational experiences.',                active: true },
-        { id: 'household',  icon: '🏠', name: 'Household Support',       desc: 'Light tidying, meal prep, school pickups, and errands to keep the family day running smoothly.',                 active: true },
-    ]
+    testimonials: SITE_CONFIG.defaultTestimonials,
+    faq:          SITE_CONFIG.defaultFaq,
+    services:     SITE_CONFIG.defaultServices
 };
 
 let config = JSON.parse(JSON.stringify(DEFAULTS));
 
 // ── Auth ──────────────────────────────────────────────────────────
+function applyMeta() {
+    const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
+    document.title = `${n} — Admin`;
+    document.getElementById('adminLogo').textContent  = `${e} ${n} Admin`;
+    document.getElementById('loginUmbrella').textContent = e;
+    document.getElementById('loginTitle').textContent    = n;
+}
+applyMeta();
+
 auth.onAuthStateChanged(user => {
     if (user) {
         document.getElementById('screen-login').style.display = 'none';
