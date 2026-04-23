@@ -1032,7 +1032,7 @@ function renderServicesList() {
                     style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-weight:700;background:var(--cream);width:100%">
                 <textarea class="svc-desc" placeholder="Description"
                     style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);width:100%;resize:vertical;min-height:60px">${svc.desc || ''}</textarea>
-                <button type="button" class="svc-delete btn-sm" style="color:var(--danger);border-color:var(--danger);margin-top:0.4rem">✕ Remove service</button>
+                <button type="button" class="svc-delete" style="background:none;border:none;color:#aaa;font-size:0.75rem;cursor:pointer;padding:0.25rem 0;margin-top:0.3rem;text-align:left">✕ remove</button>
                 <div class="rate-section">
                     <div class="rate-row">
                         <div class="field-prefix">
@@ -1057,6 +1057,8 @@ function renderServicesList() {
             row.classList.toggle('inactive', !this.checked);
         });
         row.querySelector('.svc-delete').addEventListener('click', () => {
+            const name = row.querySelector('.svc-name').value.trim() || 'this service';
+            if (!confirm(`Remove "${name}"? This cannot be undone.`)) return;
             config.services = readServicesFromUI();
             config.services.splice(i, 1);
             renderServicesList();
