@@ -634,6 +634,69 @@
 
         .rate-public-label input { cursor: pointer; }
 
+        /* ── Booking cards ──────────────────────────────────── */
+        .booking-card {
+            background: var(--white);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1.1rem 1.25rem;
+            margin-bottom: 0.6rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .booking-info { flex: 1; min-width: 0; }
+
+        .booking-when {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 0.25rem;
+        }
+
+        .booking-client {
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .booking-details {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.3rem;
+        }
+
+        .booking-notes {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 0.25rem;
+        }
+
+        .booking-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            flex-shrink: 0;
+            align-items: flex-end;
+        }
+
+        .booking-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+        }
+
+        .booking-badge.confirmed { background: rgba(39,174,96,0.12); color: #27ae60; }
+        .booking-badge.declined  { background: rgba(231,76,60,0.1);  color: var(--danger); }
+
         /* ── Responsive ─────────────────────────────────────── */
         @media (max-width: 600px) {
             .admin-header { padding: 0 1rem; }
@@ -686,6 +749,7 @@
         <button class="tab-btn" data-tab="services">Services</button>
         <button class="tab-btn" data-tab="testimonials">Testimonials</button>
         <button class="tab-btn" data-tab="faq">FAQ</button>
+        <button class="tab-btn" data-tab="bookings">Bookings</button>
     </nav>
 
     <div class="admin-body">
@@ -721,6 +785,88 @@
                     <label>Zelle Email or Phone</label>
                     <input type="text" id="cfg-zelle" placeholder="you@email.com or (555) 000-0000">
                     <p class="field-hint">Visitors will copy this to send you a Zelle payment. Leave blank to hide the Zelle button.</p>
+                </div>
+
+                <h2 class="section-heading">Calendar Integration</h2>
+                <div class="info-box" style="margin-bottom:1.25rem">
+                    <p>When you <strong>confirm a booking</strong> in the Bookings tab, it can be automatically added to your calendar. Choose a method below, then save. Credentials are stored privately and never shown on the public site.</p>
+                </div>
+                <div class="field-group">
+                    <label for="cal-method">Sync Method</label>
+                    <select id="cal-method" style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.9rem;background:var(--cream);color:var(--text)">
+                        <option value="none">None — no auto-sync</option>
+                        <option value="email">Email — receive a .ics attachment</option>
+                        <option value="google">Google Calendar (service account)</option>
+                        <option value="caldav">Apple iCloud / CalDAV</option>
+                    </select>
+                </div>
+
+                <!-- Email fields -->
+                <div id="cal-email-fields" style="display:none">
+                    <div class="field-group">
+                        <label for="cal-email">Send .ics to Email</label>
+                        <input type="email" id="cal-email" placeholder="you@example.com">
+                        <p class="field-hint">An email with a calendar attachment is sent when you confirm a booking. Defaults to your contact email if blank.</p>
+                    </div>
+                </div>
+
+                <!-- Google Calendar fields -->
+                <div id="cal-google-fields" style="display:none">
+                    <div class="field-group">
+                        <label for="cal-google-json">Service Account JSON</label>
+                        <textarea id="cal-google-json" rows="5" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN RSA PRIVATE KEY-----\n...","client_email":"...@....iam.gserviceaccount.com",...}'
+                            style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:0.78rem;background:var(--cream);resize:vertical"></textarea>
+                        <p class="field-hint">Paste the full JSON key downloaded from Google Cloud Console.</p>
+                    </div>
+                    <div class="field-group">
+                        <label for="cal-google-id">Calendar ID</label>
+                        <input type="text" id="cal-google-id" placeholder="primary">
+                        <p class="field-hint">Use <em>primary</em> for your main calendar, or paste a Calendar ID from Google Calendar → Settings → Integrate calendar.</p>
+                    </div>
+                    <details class="cal-instructions">
+                        <summary>How to set up Google Calendar sync</summary>
+                        <div class="cal-instructions-body">
+                            <p><strong>1.</strong> Go to <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a> and create a project (or use an existing one).</p>
+                            <p><strong>2.</strong> Enable the <strong>Google Calendar API</strong> for your project under APIs &amp; Services → Library.</p>
+                            <p><strong>3.</strong> Go to IAM &amp; Admin → Service Accounts → Create Service Account. Under Keys, add a key and download the <em>JSON</em> file.</p>
+                            <p><strong>4.</strong> Open Google Calendar → hover your calendar → ⋮ → Settings → Share with specific people → add the service account's <code>client_email</code> with <em>Make changes to events</em> permission.</p>
+                            <p><strong>5.</strong> Paste the JSON key above and enter your Calendar ID.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- CalDAV / iCloud fields -->
+                <div id="cal-caldav-fields" style="display:none">
+                    <div class="field-group">
+                        <label for="cal-caldav-url">CalDAV Server URL</label>
+                        <input type="url" id="cal-caldav-url" placeholder="https://caldav.icloud.com/">
+                        <p class="field-hint">iCloud: <em>https://caldav.icloud.com/</em>. For others, check your calendar app settings.</p>
+                    </div>
+                    <div class="field-group">
+                        <label for="cal-caldav-user">Username</label>
+                        <input type="text" id="cal-caldav-user" placeholder="yourname@icloud.com" autocomplete="off">
+                    </div>
+                    <div class="field-group">
+                        <label for="cal-caldav-pass">App-Specific Password</label>
+                        <input type="password" id="cal-caldav-pass" placeholder="xxxx-xxxx-xxxx-xxxx" autocomplete="off">
+                        <p class="field-hint">iCloud: generate at <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a> → Sign-In &amp; Security → App-Specific Passwords.</p>
+                    </div>
+                    <button type="button" class="btn-sm" id="findCalendarsBtn" style="margin-bottom:0.75rem">Find my calendars</button>
+                    <div id="cal-discover-result" style="display:none;margin-bottom:1rem;font-size:0.875rem"></div>
+                    <div class="field-group">
+                        <label for="cal-caldav-cal">Calendar URL</label>
+                        <input type="url" id="cal-caldav-cal" placeholder="https://p12-caldav.icloud.com/dav/principals/...">
+                        <p class="field-hint">Use "Find my calendars" to discover the URL, then click "Use this" next to the calendar you want.</p>
+                    </div>
+                    <details class="cal-instructions">
+                        <summary>How to set up iCloud CalDAV sync</summary>
+                        <div class="cal-instructions-body">
+                            <p><strong>1.</strong> Your username is your Apple ID email.</p>
+                            <p><strong>2.</strong> Generate an app-specific password at <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a> → Security → App-Specific Passwords. Name it "Holly Poppins" or similar.</p>
+                            <p><strong>3.</strong> Enter the server URL (<em>https://caldav.icloud.com/</em>), your Apple ID, and the app-specific password, then click "Find my calendars".</p>
+                            <p><strong>4.</strong> Click "Use this" next to the calendar you want bookings added to.</p>
+                        </div>
+                    </details>
                 </div>
 
             </div>
@@ -800,6 +946,24 @@
                 <button type="button" class="btn-sm" id="addTestimonialBtn" style="margin-top:0.75rem">+ Add testimonial manually</button>
             </div>
 
+            <!-- Bookings Tab -->
+            <div id="tab-bookings" class="tab-panel">
+                <h2 class="section-heading">Pending Requests</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    New booking requests from visitors. Confirm to accept and push to your calendar, or decline.
+                </p>
+                <div id="bookings-pending"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Confirmed Bookings</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    Upcoming confirmed bookings. Click Decline to cancel.
+                </p>
+                <div id="bookings-confirmed"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Declined</h2>
+                <div id="bookings-declined"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+            </div>
+
             <!-- FAQ Tab -->
             <div id="tab-faq" class="tab-panel">
                 <h2 class="section-heading">Frequently Asked Questions</h2>
@@ -860,6 +1024,7 @@ auth.onAuthStateChanged(user => {
         document.getElementById('screen-admin').classList.add('visible');
         document.getElementById('adminUserEmail').textContent = user.email;
         loadConfig();
+        loadCalConfig();
     } else {
         document.getElementById('screen-login').style.display = 'flex';
         document.getElementById('screen-admin').classList.remove('visible');
@@ -906,6 +1071,7 @@ async function saveConfig() {
     harvestUI();
     try {
         await db.collection('config').doc('settings').set(config);
+        await saveCalConfig();
         showToast('✓ Saved — changes are live immediately.', 'success');
     } catch {
         showToast('Save failed. Check your connection.', 'error');
@@ -1122,6 +1288,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
         if (btn.dataset.tab === 'availability')  renderAdminCalendar();
         if (btn.dataset.tab === 'testimonials') loadPendingSubmissions();
+        if (btn.dataset.tab === 'bookings')     loadBookings();
     });
 });
 
@@ -1359,6 +1526,238 @@ document.getElementById('addFaqBtn').addEventListener('click', () => {
     renderFaqList();
     document.getElementById('faq-list').lastElementChild?.querySelector('.faq-q')?.focus();
 });
+
+// ── Calendar Integration Config (private/calendar) ───────────────
+const CAL_DEFAULTS = {
+    method: 'none', email: '', googleJson: '', googleCalId: 'primary',
+    caldavUrl: 'https://caldav.icloud.com/', caldavUser: '', caldavPass: '', caldavCal: ''
+};
+let calConfig = { ...CAL_DEFAULTS };
+
+async function loadCalConfig() {
+    try {
+        const doc = await db.collection('private').doc('calendar').get();
+        if (doc.exists) calConfig = { ...CAL_DEFAULTS, ...doc.data() };
+    } catch { /* private collection may not exist yet */ }
+    populateCalUI();
+}
+
+function populateCalUI() {
+    document.getElementById('cal-method').value      = calConfig.method      || 'none';
+    document.getElementById('cal-email').value       = calConfig.email       || '';
+    document.getElementById('cal-google-json').value = calConfig.googleJson  || '';
+    document.getElementById('cal-google-id').value   = calConfig.googleCalId || 'primary';
+    document.getElementById('cal-caldav-url').value  = calConfig.caldavUrl   || 'https://caldav.icloud.com/';
+    document.getElementById('cal-caldav-user').value = calConfig.caldavUser  || '';
+    document.getElementById('cal-caldav-pass').value = calConfig.caldavPass  || '';
+    document.getElementById('cal-caldav-cal').value  = calConfig.caldavCal   || '';
+    updateCalFields();
+}
+
+function harvestCalUI() {
+    calConfig.method      = document.getElementById('cal-method').value;
+    calConfig.email       = document.getElementById('cal-email').value.trim();
+    calConfig.googleJson  = document.getElementById('cal-google-json').value.trim();
+    calConfig.googleCalId = document.getElementById('cal-google-id').value.trim() || 'primary';
+    calConfig.caldavUrl   = document.getElementById('cal-caldav-url').value.trim();
+    calConfig.caldavUser  = document.getElementById('cal-caldav-user').value.trim();
+    calConfig.caldavPass  = document.getElementById('cal-caldav-pass').value.trim();
+    calConfig.caldavCal   = document.getElementById('cal-caldav-cal').value.trim();
+}
+
+async function saveCalConfig() {
+    harvestCalUI();
+    try {
+        await db.collection('private').doc('calendar').set(calConfig);
+    } catch { /* fails gracefully if Firestore rules not yet updated */ }
+}
+
+function updateCalFields() {
+    const method = document.getElementById('cal-method').value;
+    document.getElementById('cal-email-fields').style.display  = method === 'email'  ? '' : 'none';
+    document.getElementById('cal-google-fields').style.display = method === 'google' ? '' : 'none';
+    document.getElementById('cal-caldav-fields').style.display = method === 'caldav' ? '' : 'none';
+}
+
+document.getElementById('cal-method').addEventListener('change', updateCalFields);
+
+// ── CalDAV Discovery ──────────────────────────────────────────────
+document.getElementById('findCalendarsBtn').addEventListener('click', async () => {
+    const url  = document.getElementById('cal-caldav-url').value.trim()  || 'https://caldav.icloud.com/';
+    const user = document.getElementById('cal-caldav-user').value.trim();
+    const pass = document.getElementById('cal-caldav-pass').value.trim();
+    if (!user || !pass) { showToast('Enter a username and password first.', 'error'); return; }
+
+    const btn    = document.getElementById('findCalendarsBtn');
+    const result = document.getElementById('cal-discover-result');
+    btn.disabled = true;
+    btn.textContent = 'Searching…';
+    result.style.display = 'none';
+
+    try {
+        const resp = await fetch('/cal-push.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ method: 'caldav_discover', booking: {}, cal: { caldavUrl: url, caldavUser: user, caldavPass: pass } }),
+        });
+        const data = await resp.json();
+        if (!data.ok) throw new Error(data.error || 'Unknown error');
+        if (!data.calendars || !data.calendars.length) {
+            result.innerHTML = '<p style="color:var(--danger)">No calendars found for this account.</p>';
+        } else {
+            result.innerHTML = data.calendars.map(c =>
+                `<div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;flex-wrap:wrap">
+                    <button class="btn-sm use-cal-btn" data-url="${escHtml(c.url)}">Use this</button>
+                    <strong>${escHtml(c.name)}</strong>
+                    <span style="font-size:0.72rem;color:var(--text-light)">${escHtml(c.url)}</span>
+                </div>`).join('');
+            result.querySelectorAll('.use-cal-btn').forEach(b => {
+                b.addEventListener('click', () => {
+                    document.getElementById('cal-caldav-cal').value = b.dataset.url;
+                    showToast('✓ Calendar selected — save to apply.', 'success');
+                });
+            });
+        }
+    } catch (e) {
+        result.innerHTML = `<p style="color:var(--danger)">Discovery failed: ${escHtml(e.message)}</p>`;
+    }
+    result.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Find my calendars';
+});
+
+// ── Bookings ──────────────────────────────────────────────────────
+async function loadBookings() {
+    const pendEl  = document.getElementById('bookings-pending');
+    const confEl  = document.getElementById('bookings-confirmed');
+    const declEl  = document.getElementById('bookings-declined');
+    pendEl.innerHTML = confEl.innerHTML = declEl.innerHTML =
+        '<p style="color:var(--text-light);font-size:0.875rem">Loading…</p>';
+
+    try {
+        const snap = await db.collection('bookings')
+            .orderBy('createdAt', 'desc')
+            .limit(100)
+            .get();
+
+        const pending = [], confirmed = [], declined = [];
+        snap.forEach(doc => {
+            const d = { id: doc.id, ...doc.data() };
+            if      (d.status === 'confirmed') confirmed.push(d);
+            else if (d.status === 'declined')  declined.push(d);
+            else                               pending.push(d);
+        });
+
+        renderBookingList(pendEl,  pending,   'pending');
+        renderBookingList(confEl,  confirmed, 'confirmed');
+        renderBookingList(declEl,  declined,  'declined');
+    } catch (e) {
+        const msg = `<p style="color:var(--danger);font-size:0.875rem">Failed to load: ${escHtml(e.message)}</p>`;
+        pendEl.innerHTML = confEl.innerHTML = declEl.innerHTML = msg;
+    }
+}
+
+function renderBookingList(container, bookings, listType) {
+    if (!bookings.length) {
+        container.innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">None.</p>';
+        return;
+    }
+    container.innerHTML = '';
+    bookings.forEach(b => {
+        const when = b.date + (b.time ? ' at ' + b.time : '');
+        const card = document.createElement('div');
+        card.className = 'booking-card';
+        card.innerHTML = `
+            <div class="booking-info">
+                <div class="booking-when">${escHtml(when)}</div>
+                <div class="booking-client"><strong>${escHtml(b.name)}</strong> — ${escHtml(b.service)}</div>
+                <div class="booking-details">
+                    ${b.email ? `<span>✉ ${escHtml(b.email)}</span>` : ''}
+                    ${b.phone ? `<span>📞 ${escHtml(b.phone)}</span>` : ''}
+                </div>
+                ${b.notes ? `<div class="booking-notes">${escHtml(b.notes)}</div>` : ''}
+            </div>
+            <div class="booking-actions">
+                ${listType === 'pending'   ? `<button class="btn-primary bk-confirm" title="Confirm and push to calendar">Confirm</button>` : ''}
+                ${listType !== 'declined'  ? `<button class="btn-sm bk-decline" style="color:var(--danger);border-color:var(--danger)">Decline</button>` : ''}
+                ${listType === 'confirmed' ? `<span class="booking-badge confirmed">Confirmed</span>` : ''}
+                ${listType === 'declined'  ? `<span class="booking-badge declined">Declined</span>` : ''}
+            </div>`;
+        card.querySelector('.bk-confirm')?.addEventListener('click', () => confirmBooking(b));
+        card.querySelector('.bk-decline')?.addEventListener('click', () => updateBookingStatus(b.id, 'declined'));
+        container.appendChild(card);
+    });
+}
+
+function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function confirmBooking(booking) {
+    try {
+        await db.collection('bookings').doc(booking.id).update({ status: 'confirmed' });
+        showToast('✓ Booking confirmed.', 'success');
+        loadBookings();
+        calPush(booking); // fire-and-forget — result shown separately
+    } catch (e) {
+        showToast('Error confirming: ' + e.message, 'error');
+    }
+}
+
+async function updateBookingStatus(id, status) {
+    try {
+        await db.collection('bookings').doc(id).update({ status });
+        showToast(status === 'declined' ? 'Booking declined.' : '✓ Status updated.', 'success');
+        loadBookings();
+    } catch (e) {
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+async function calPush(booking) {
+    if (calConfig.method === 'none') return;
+
+    const payload = {
+        method:  calConfig.method,
+        booking: {
+            name:    booking.name    || '',
+            email:   booking.email   || '',
+            phone:   booking.phone   || '',
+            service: booking.service || '',
+            date:    booking.date    || '',
+            time:    booking.time    || '',
+            notes:   booking.notes   || '',
+        },
+        cal: {},
+    };
+
+    if (calConfig.method === 'email') {
+        payload.cal.email = calConfig.email || config.email;
+    } else if (calConfig.method === 'google') {
+        payload.cal.googleJson  = calConfig.googleJson;
+        payload.cal.googleCalId = calConfig.googleCalId || 'primary';
+    } else if (calConfig.method === 'caldav') {
+        payload.cal.caldavUrl  = calConfig.caldavCal || calConfig.caldavUrl;
+        payload.cal.caldavUser = calConfig.caldavUser;
+        payload.cal.caldavPass = calConfig.caldavPass;
+    }
+
+    try {
+        const resp = await fetch('/cal-push.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload),
+        });
+        const data = await resp.json();
+        if (data.ok && !data.skipped) {
+            showToast('✓ Added to calendar.', 'success');
+        } else if (!data.ok) {
+            showToast(`Calendar: ${data.error}`, 'error');
+        }
+    } catch (e) {
+        showToast(`Calendar push failed: ${e.message}`, 'error');
+    }
+}
 
 // ── Toast ─────────────────────────────────────────────────────────
 function showToast(msg, type = 'success') {

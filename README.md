@@ -37,6 +37,13 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if request.auth != null;
     }
+    match /bookings/{doc} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+    match /private/{doc} {
+      allow read, write: if request.auth != null;
+    }
   }
 }
 ```
@@ -99,6 +106,7 @@ GitHub Actions will SFTP the four files to your server. The admin panel is at `/
 | `index.html` | Public-facing site |
 | `admin.html` | Password-protected admin panel |
 | `ical-proxy.php` | Server-side proxy for iCal calendar feeds (CORS) |
+| `cal-push.php` | Server-side calendar push: email (.ics), Google Calendar, Apple iCloud/CalDAV |
 | `.github/workflows/deploy.yml` | Auto-deploy on push to main |
 
 ## Admin features

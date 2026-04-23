@@ -22,6 +22,7 @@ jobs:
           put index.html /home/${{ secrets.SFTP_USER }}/hollypoppins.com/index.html
           put admin.html /home/${{ secrets.SFTP_USER }}/hollypoppins.com/admin.html
           put ical-proxy.php /home/${{ secrets.SFTP_USER }}/hollypoppins.com/ical-proxy.php
+          put cal-push.php /home/${{ secrets.SFTP_USER }}/hollypoppins.com/cal-push.php
           SFTP
 
       - name: Confirm

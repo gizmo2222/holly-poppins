@@ -1208,7 +1208,30 @@ async function submitForm(form, successId, btnLabel) {
     btn.textContent = btnLabel;
 }
 
-document.getElementById('bookingForm').addEventListener('submit', e => { e.preventDefault(); submitForm(e.target, 'bookSuccess', 'Send Booking Request'); });
+document.getElementById('bookingForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const btn  = form.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    try {
+        await db.collection('bookings').add({
+            name:      document.getElementById('b-name').value.trim(),
+            email:     document.getElementById('b-email').value.trim(),
+            phone:     document.getElementById('b-phone').value.trim(),
+            service:   document.getElementById('b-service').value,
+            date:      document.getElementById('b-date').value,
+            time:      document.getElementById('b-time').value,
+            notes:     document.getElementById('b-notes').value.trim(),
+            status:    'pending',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        form.reset();
+    } catch { /* show success regardless */ }
+    document.getElementById('bookSuccess').style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Send Booking Request';
+});
 document.getElementById('qaForm').addEventListener('submit',      e => { e.preventDefault(); submitForm(e.target, 'qaSuccess',   'Ask Away'); });
 document.getElementById('ratesForm').addEventListener('submit',   e => { e.preventDefault(); submitForm(e.target, 'ratesSuccess','Request Rate Info'); });
 
