@@ -893,6 +893,10 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label for="r-email">Email <span style="font-weight:400;opacity:0.6">(optional — for a thank-you note)</span></label>
+                    <input type="email" id="r-email" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
                     <label>Your Rating *</label>
                     <div class="star-pick-wrap" id="refStars">
                         <span class="star-pick" data-val="1">★</span>
@@ -1043,6 +1047,8 @@ const DEFAULTS = {
 };
 
 let AVAILABLE_DATES = [];
+let emailTemplates = {};
+let adminEmail     = '';
 
 async function loadConfig() {
     let cfg = DEFAULTS;
@@ -1054,6 +1060,8 @@ async function loadConfig() {
 }
 
 function applyConfig(cfg) {
+    emailTemplates = cfg.emailTemplates || {};
+    adminEmail     = cfg.email          || '';
     // Email
     if (cfg.email) {
         document.getElementById('footerEmail').href = `mailto:${cfg.email}`;
@@ -1118,6 +1126,39 @@ function applyConfig(cfg) {
             <div class="faq-answer"><div class="faq-answer-inner">${item.a}</div></div>
         </div>`).join('');
     initFaqAccordion();
+}
+
+// ── Email ──────────────────────────────────────────────────────────
+const DEFAULT_EMAIL_TEMPLATES = {
+    booking_visitor:   { subject: 'Booking request received — {service} on {date}', body: 'Hi {name},\n\nThank you for reaching out! I\'ve received your booking request for {service} on {date}{time}.\n\nI\'ll review it and get back to you within 24 hours to confirm.\n\nTalk soon,\n{siteName}' },
+    booking_admin:     { subject: 'New booking request — {name} ({service}, {date})', body: 'New booking request:\n\nName:    {name}\nEmail:   {email}\nPhone:   {phone}\nService: {service}\nDate:    {date}{time}\nNotes:   {notes}' },
+    booking_confirmed: { subject: 'Booking confirmed — {service} on {date}', body: 'Hi {name},\n\nGreat news — your booking is confirmed!\n\nService: {service}\nDate:    {date}{time}\n\nIf you need to reschedule or have any questions, just reply to this email.\n\nLooking forward to it!\n{siteName}' },
+    booking_declined:  { subject: 'Re: Booking request — {service} on {date}', body: 'Hi {name},\n\nThank you for your request. Unfortunately I\'m not available on {date} for {service}.\n\nFeel free to check the calendar for other available dates and send a new request — I\'d love to find a time that works.\n\n{siteName}' },
+    reference_visitor: { subject: 'Thank you for your reference!', body: 'Hi {name},\n\nThank you so much for taking the time to leave a reference — I really appreciate it!\n\nIt will be reviewed and added to the site shortly.\n\n{siteName}' },
+    question_visitor:  { subject: 'Got your question!', body: 'Hi {name},\n\nThanks for reaching out! I\'ve received your question and will reply to this email within 24 hours.\n\nTalk soon,\n{siteName}' },
+    question_admin:    { subject: 'New question from {name}', body: 'Question from {name} ({email}):\n\n{question}\n\n---\nReply directly to this email to respond.' },
+    rates_visitor:     { subject: 'Rate info request received', body: 'Hi {name},\n\nThanks for your interest in {service}! I\'ve received your request and will send you rate details within 24 hours.\n\nTalk soon,\n{siteName}' },
+    rates_admin:       { subject: 'Rate info request — {name} ({service})', body: 'Rate info request from {name} ({email}):\n\nService: {service}\n\n{details}\n\n---\nReply directly to this email to respond.' },
+};
+
+function fillTemplate(str, vars) {
+    return (str || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+}
+
+function sendMail(type, to, vars) {
+    if (!to) return;
+    const tmpl = emailTemplates[type] || DEFAULT_EMAIL_TEMPLATES[type];
+    if (!tmpl) return;
+    fetch('/mailer.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+            to,
+            subject:  fillTemplate(tmpl.subject, vars),
+            body:     fillTemplate(tmpl.body,    vars),
+            replyTo:  vars._replyTo || '',
+        }),
+    }).catch(() => {});
 }
 
 // ── Calendar ───────────────────────────────────────────────────
@@ -1210,30 +1251,60 @@ async function submitForm(form, successId, btnLabel) {
 
 document.getElementById('bookingForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const form = e.target;
-    const btn  = form.querySelector('button[type=submit]');
+    const form    = e.target;
+    const btn     = form.querySelector('button[type=submit]');
+    const name    = document.getElementById('b-name').value.trim();
+    const email   = document.getElementById('b-email').value.trim();
+    const phone   = document.getElementById('b-phone').value.trim();
+    const service = document.getElementById('b-service').value;
+    const date    = document.getElementById('b-date').value;
+    const time    = document.getElementById('b-time').value;
+    const notes   = document.getElementById('b-notes').value.trim();
     btn.disabled = true;
     btn.textContent = 'Sending…';
     try {
-        await db.collection('bookings').add({
-            name:      document.getElementById('b-name').value.trim(),
-            email:     document.getElementById('b-email').value.trim(),
-            phone:     document.getElementById('b-phone').value.trim(),
-            service:   document.getElementById('b-service').value,
-            date:      document.getElementById('b-date').value,
-            time:      document.getElementById('b-time').value,
-            notes:     document.getElementById('b-notes').value.trim(),
-            status:    'pending',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+        await db.collection('bookings').add({ name, email, phone, service, date, time, notes, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
         form.reset();
     } catch { /* show success regardless */ }
     document.getElementById('bookSuccess').style.display = 'block';
     btn.disabled = false;
     btn.textContent = 'Send Booking Request';
+    const vars = { name, email, phone, service, date, time: time ? ' at ' + time : '', notes, siteName: SITE_CONFIG.siteName };
+    sendMail('booking_visitor', email, vars);
+    if (adminEmail) sendMail('booking_admin', adminEmail, { ...vars, _replyTo: email });
 });
-document.getElementById('qaForm').addEventListener('submit',      e => { e.preventDefault(); submitForm(e.target, 'qaSuccess',   'Ask Away'); });
-document.getElementById('ratesForm').addEventListener('submit',   e => { e.preventDefault(); submitForm(e.target, 'ratesSuccess','Request Rate Info'); });
+document.getElementById('qaForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const form     = e.target;
+    const name     = document.getElementById('q-name').value.trim();
+    const email    = document.getElementById('q-email').value.trim();
+    const question = document.getElementById('q-question').value.trim();
+    const btn = form.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    form.reset();
+    document.getElementById('qaSuccess').style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Ask Away';
+    const vars = { name, email, question, siteName: SITE_CONFIG.siteName };
+    sendMail('question_visitor', email, vars);
+    if (adminEmail) sendMail('question_admin', adminEmail, { ...vars, _replyTo: email });
+});
+
+document.getElementById('ratesForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const form    = e.target;
+    const name    = document.getElementById('ra-name').value.trim();
+    const email   = document.getElementById('ra-email').value.trim();
+    const service = document.getElementById('ra-service').value;
+    const details = document.getElementById('ra-details').value.trim();
+    const btn = form.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    form.reset();
+    document.getElementById('ratesSuccess').style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Request Rate Info';
+    const vars = { name, email, service, details, siteName: SITE_CONFIG.siteName };
+    sendMail('rates_visitor', email, vars);
+    if (adminEmail) sendMail('rates_admin', adminEmail, { ...vars, _replyTo: email });
+});
 
 // ── Zelle button ───────────────────────────────────────────────
 document.getElementById('zelleBtn').addEventListener('click', function() {
@@ -1263,13 +1334,15 @@ let refStarValue = 5;
 // ── Reference form → Firestore ─────────────────────────────────
 document.getElementById('refForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const form = e.target;
-    const btn  = form.querySelector('button[type=submit]');
+    const form   = e.target;
+    const btn    = form.querySelector('button[type=submit]');
+    const rName  = document.getElementById('r-name').value.trim();
+    const rEmail = document.getElementById('r-email').value.trim();
     btn.disabled = true;
     btn.textContent = 'Submitting…';
     try {
         await db.collection('testimonials').add({
-            name:      document.getElementById('r-name').value.trim(),
+            name:      rName,
             role:      document.getElementById('r-role').value.trim(),
             quote:     document.getElementById('r-ref').value.trim(),
             stars:     refStarValue,
@@ -1280,10 +1353,11 @@ document.getElementById('refForm').addEventListener('submit', async e => {
         refStarValue = 5;
         document.querySelectorAll('#refStars .star-pick').forEach((s, i) =>
             s.style.color = i < 5 ? 'var(--gold)' : 'rgba(255,255,255,0.2)');
-    } catch { /* show success anyway so bots don't probe */ }
+    } catch { /* show success anyway */ }
     document.getElementById('refSuccess').style.display = 'block';
     btn.disabled = false;
     btn.textContent = 'Submit Reference';
+    if (rEmail) sendMail('reference_visitor', rEmail, { name: rName, siteName: SITE_CONFIG.siteName });
 });
 
 // ── FAQ ────────────────────────────────────────────────────────

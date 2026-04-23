@@ -872,6 +872,10 @@
                     </div>
                 </div>
 
+                <h2 class="section-heading">Email Templates</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Customize messages sent automatically. Use <code>{name}</code>, <code>{service}</code>, <code>{date}</code>, <code>{time}</code>, <code>{email}</code>, <code>{siteName}</code> as placeholders.</p>
+                <div id="email-templates-list"></div>
+
             </div>
 
             <!-- Calendar Tab -->
@@ -1064,6 +1068,7 @@ function populateUI() {
     renderServicesList();
     renderApprovedList();
     renderFaqList();
+    renderTemplateEditor();
 }
 
 function harvestUI() {
@@ -1076,6 +1081,7 @@ function harvestUI() {
     config.testimonials  = readApprovedFromUI();
     config.faq           = readFaqFromUI();
     // availableDates kept in sync on every click
+    config.emailTemplates = readTemplatesFromUI();
 }
 
 // ── Calendar ──────────────────────────────────────────────────────
@@ -1655,7 +1661,7 @@ function renderBookingList(container, bookings, listType) {
                 ${listType === 'declined'  ? `<span class="booking-badge declined">Declined</span>` : ''}
             </div>`;
         card.querySelector('.bk-confirm')?.addEventListener('click', () => confirmBooking(b));
-        card.querySelector('.bk-decline')?.addEventListener('click', () => updateBookingStatus(b.id, 'declined'));
+        card.querySelector('.bk-decline')?.addEventListener('click', () => declineBooking(b));
         container.appendChild(card);
     });
 }
@@ -1669,9 +1675,21 @@ async function confirmBooking(booking) {
         await db.collection('bookings').doc(booking.id).update({ status: 'confirmed' });
         showToast('✓ Booking confirmed.', 'success');
         loadBookings();
-        calPush(booking); // fire-and-forget — result shown separately
+        calPush(booking);
+        if (booking.email) sendMail('booking_confirmed', booking.email, buildVars(booking));
     } catch (e) {
         showToast('Error confirming: ' + e.message, 'error');
+    }
+}
+
+async function declineBooking(booking) {
+    try {
+        await db.collection('bookings').doc(booking.id).update({ status: 'declined' });
+        showToast('Booking declined.', 'success');
+        loadBookings();
+        if (booking.email) sendMail('booking_declined', booking.email, buildVars(booking));
+    } catch (e) {
+        showToast('Error: ' + e.message, 'error');
     }
 }
 
@@ -1728,6 +1746,111 @@ async function calPush(booking) {
     } catch (e) {
         showToast(`Calendar push failed: ${e.message}`, 'error');
     }
+}
+
+// ── Email Templates ───────────────────────────────────────────────
+const EMAIL_TEMPLATE_TYPES = [
+    { key: 'booking_visitor',   label: 'Booking request received',  hint: 'Sent to visitor on submission. Available: {name} {email} {service} {date} {time} {phone} {notes} {siteName}' },
+    { key: 'booking_admin',     label: 'New booking notification',   hint: 'Sent to you on submission. Available: {name} {email} {service} {date} {time} {phone} {notes}' },
+    { key: 'booking_confirmed', label: 'Booking confirmed',          hint: 'Sent to visitor when you confirm. Available: {name} {email} {service} {date} {time} {siteName}' },
+    { key: 'booking_declined',  label: 'Booking declined',           hint: 'Sent to visitor when you decline. Available: {name} {email} {service} {date} {siteName}' },
+    { key: 'reference_visitor', label: 'Reference received',         hint: 'Sent to visitor after submitting a reference. Available: {name} {siteName}' },
+    { key: 'question_visitor',  label: 'Question received',          hint: 'Sent to visitor after asking a question. Available: {name} {siteName}' },
+    { key: 'question_admin',    label: 'New question',               hint: 'Sent to you when someone asks a question. Available: {name} {email} {question}' },
+    { key: 'rates_visitor',     label: 'Rate info request received', hint: 'Sent to visitor after requesting rate info. Available: {name} {service} {siteName}' },
+    { key: 'rates_admin',       label: 'Rate info request',          hint: 'Sent to you when someone requests rate info. Available: {name} {email} {service} {details}' },
+];
+
+const DEFAULT_EMAIL_TEMPLATES = {
+    booking_visitor:   { subject: 'Booking request received — {service} on {date}', body: 'Hi {name},\n\nThank you for reaching out! I\'ve received your booking request for {service} on {date}{time}.\n\nI\'ll review it and get back to you within 24 hours to confirm.\n\nTalk soon,\n{siteName}' },
+    booking_admin:     { subject: 'New booking request — {name} ({service}, {date})', body: 'New booking request:\n\nName:    {name}\nEmail:   {email}\nPhone:   {phone}\nService: {service}\nDate:    {date}{time}\nNotes:   {notes}' },
+    booking_confirmed: { subject: 'Booking confirmed — {service} on {date}', body: 'Hi {name},\n\nGreat news — your booking is confirmed!\n\nService: {service}\nDate:    {date}{time}\n\nIf you need to reschedule or have any questions, just reply to this email.\n\nLooking forward to it!\n{siteName}' },
+    booking_declined:  { subject: 'Re: Booking request — {service} on {date}', body: 'Hi {name},\n\nThank you for your request. Unfortunately I\'m not available on {date} for {service}.\n\nFeel free to check the calendar for other available dates and send a new request — I\'d love to find a time that works.\n\n{siteName}' },
+    reference_visitor: { subject: 'Thank you for your reference!', body: 'Hi {name},\n\nThank you so much for taking the time to leave a reference — I really appreciate it!\n\nIt will be reviewed and added to the site shortly.\n\n{siteName}' },
+    question_visitor:  { subject: 'Got your question!', body: 'Hi {name},\n\nThanks for reaching out! I\'ve received your question and will reply to this email within 24 hours.\n\nTalk soon,\n{siteName}' },
+    question_admin:    { subject: 'New question from {name}', body: 'Question from {name} ({email}):\n\n{question}\n\n---\nReply directly to this email to respond.' },
+    rates_visitor:     { subject: 'Rate info request received', body: 'Hi {name},\n\nThanks for your interest in {service}! I\'ve received your request and will send you rate details within 24 hours.\n\nTalk soon,\n{siteName}' },
+    rates_admin:       { subject: 'Rate info request — {name} ({service})', body: 'Rate info request from {name} ({email}):\n\nService: {service}\n\n{details}\n\n---\nReply directly to this email to respond.' },
+};
+
+function fillTemplate(str, vars) {
+    return (str || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+}
+
+async function sendMail(type, to, vars) {
+    if (!to) return;
+    const tmpl = config.emailTemplates?.[type] || DEFAULT_EMAIL_TEMPLATES[type];
+    if (!tmpl) return;
+    try {
+        const resp = await fetch('/mailer.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+                to,
+                subject: fillTemplate(tmpl.subject, vars),
+                body:    fillTemplate(tmpl.body,    vars),
+                replyTo: vars._replyTo || '',
+            }),
+        });
+        const data = await resp.json();
+        if (!data.ok) showToast(`Email: ${data.error}`, 'error');
+    } catch (e) {
+        showToast(`Email failed: ${e.message}`, 'error');
+    }
+}
+
+function buildVars(booking) {
+    return {
+        name:     booking.name    || '',
+        email:    booking.email   || '',
+        phone:    booking.phone   || '',
+        service:  booking.service || '',
+        date:     booking.date    || '',
+        time:     booking.time ? ' at ' + booking.time : '',
+        notes:    booking.notes   || '',
+        siteName: SITE_CONFIG.siteName,
+    };
+}
+
+function renderTemplateEditor() {
+    const list = document.getElementById('email-templates-list');
+    if (!list) return;
+    list.innerHTML = '';
+    EMAIL_TEMPLATE_TYPES.forEach(t => {
+        const saved = config.emailTemplates?.[t.key] || {};
+        const def   = DEFAULT_EMAIL_TEMPLATES[t.key] || {};
+        const subj  = saved.subject ?? def.subject ?? '';
+        const body  = saved.body    ?? def.body    ?? '';
+        const el = document.createElement('details');
+        el.className = 'cal-instructions';
+        el.style.marginBottom = '0.4rem';
+        el.innerHTML = `
+            <summary>${t.label}</summary>
+            <div class="cal-instructions-body">
+                <p style="margin-bottom:0.75rem;font-size:0.8rem">${escHtml(t.hint)}</p>
+                <div class="field-group" style="margin-bottom:0.5rem">
+                    <label style="font-size:0.75rem;margin-bottom:0.3rem">Subject</label>
+                    <input id="tmpl-subj-${t.key}" type="text" value="${escHtml(subj)}"
+                        style="width:100%;padding:0.55rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream)">
+                </div>
+                <div class="field-group">
+                    <label style="font-size:0.75rem;margin-bottom:0.3rem">Body</label>
+                    <textarea id="tmpl-body-${t.key}" rows="6"
+                        style="width:100%;padding:0.55rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--cream);resize:vertical;white-space:pre">${escHtml(body)}</textarea>
+                </div>
+            </div>`;
+        list.appendChild(el);
+    });
+}
+
+function readTemplatesFromUI() {
+    const tmpl = {};
+    EMAIL_TEMPLATE_TYPES.forEach(t => {
+        const subj = document.getElementById(`tmpl-subj-${t.key}`);
+        const body = document.getElementById(`tmpl-body-${t.key}`);
+        if (subj && body) tmpl[t.key] = { subject: subj.value.trim(), body: body.value.trim() };
+    });
+    return tmpl;
 }
 
 // ── Toast ─────────────────────────────────────────────────────────
