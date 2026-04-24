@@ -119,9 +119,10 @@
         .hero-content { position: relative; z-index: 1; }
 
         .hero-umbrella {
-            font-size: 5rem;
-            margin-bottom: 1rem;
+            width: clamp(80px, 12vw, 140px);
+            height: auto;
             display: block;
+            margin: 0 auto 1.25rem;
             filter: drop-shadow(0 4px 20px rgba(212,175,55,0.5));
             animation: float 4s ease-in-out infinite;
             will-change: transform;
@@ -817,7 +818,7 @@
 <!-- ── Hero ────────────────────────────────────────────────── -->
 <section id="hero">
     <div class="hero-content">
-        <span class="hero-umbrella" id="heroUmbrella">☂</span>
+        <img src="umbrella.png" class="hero-umbrella" id="heroUmbrella" alt="">
         <h1 class="hero-title" id="heroTitle"><span>Holly</span> Poppins</h1>
         <p class="hero-tagline" id="heroTagline">"Perfectly Imperfect and That's OK"</p>
         <p class="hero-desc" id="heroDesc">Trusted, caring, and dependable — available for nannying, pet sitting, and more. Let's find a time that works perfectly for your family.</p>
@@ -1470,7 +1471,7 @@ function applyMeta() {
     const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
     document.title = n;
     document.getElementById('navLogo').innerHTML = `${e} ${n}`;
-    document.getElementById('heroUmbrella').textContent = e;
+    // heroUmbrella is now an <img> — leave it as-is
     const [first, ...rest] = n.split(' ');
     document.getElementById('heroTitle').innerHTML = rest.length
         ? `<span>${first}</span> ${rest.join(' ')}` : `<span>${first}</span>`;
