@@ -19,7 +19,7 @@ const SITE_CONFIG = {
     // ── Identity ──────────────────────────────────────────────────────────────
     siteName: "Holly Poppins",
     navEmoji: "☂",                              // shown in nav + hero + footer
-    tagline:  "Practically Perfect in Every Way",
+    tagline:  "Perfectly Imperfect and That's OK",
     heroDesc: "Trusted, caring, and dependable — available for nannying, pet sitting, and more. Let's find a time that works perfectly for your family.",
 
     // ── Theme colors ──────────────────────────────────────────────────────────
