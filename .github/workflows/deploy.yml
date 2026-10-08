@@ -3,6 +3,7 @@ name: Deploy to hollypoppins.com
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -45,6 +46,17 @@ jobs:
             install -m 600 /dev/null ~/.ssh/deploy_key
             printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
             SSH_OPTS+=(-i ~/.ssh/deploy_key -o IdentitiesOnly=yes)
+
+            # Try the key on its own (no password) so the log shows whether it works
+            echo pwd > key-check
+            if sftp "${SSH_OPTS[@]}" -o BatchMode=yes -o PasswordAuthentication=no -b key-check "$SFTP_USER@$HOST" > /dev/null 2>&1; then
+              echo "Deploy key: accepted by the server"
+            elif [ -n "$SSHPASS" ]; then
+              echo "::warning::Deploy key was refused; falling back to SFTP_PASSWORD"
+            else
+              echo "::error::Deploy key was refused and no SFTP_PASSWORD fallback is set"
+              exit 1
+            fi
           fi
 
           if [ -n "$SSHPASS" ]; then
