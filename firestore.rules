@@ -63,7 +63,7 @@ service cloud.firestore {
         && isText(request.resource.data.email, 200)
         && request.resource.data.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
         && (!('phone' in request.resource.data) || isText(request.resource.data.phone, 40))
-        && hasText(request.resource.data.service, 100)
+        && hasText(request.resource.data['service'], 100)   // "service" is a reserved word, so no dot syntax
         && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && (!('time' in request.resource.data) || isText(request.resource.data.time, 20))
         && (!('notes' in request.resource.data) || isText(request.resource.data.notes, 2000))
