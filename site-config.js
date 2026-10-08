@@ -43,11 +43,9 @@ const SITE_CONFIG = {
         { id: 'tutoring',   icon: '📚', name: 'Tutoring',                desc: 'Patient, encouraging academic support across subjects — homework help, test prep, and building study skills.',   active: true, rate: { base: '', min: '', notes: '', public: false } },
     ],
 
-    defaultTestimonials: [
-        { name: 'The Harrison Family', role: 'Nanny Client · 3 years', quote: 'Holly has been an absolute blessing for our family. Reliable, warm, and wonderful with our children — we could not recommend her more highly.', stars: 5 },
-        { name: 'Amanda & Tom R.',     role: 'Pet Sitting Client',      quote: 'Our dog absolutely adores her. We never worry when Holly is on the job — she sends updates and treats our pup like her own.',                    stars: 5 },
-        { name: 'Jessica M.',          role: 'Childcare Client',        quote: 'Dependable, caring, and great with kids of all ages. We felt completely at ease leaving our little ones in her care.',                          stars: 5 },
-    ],
+    // Real testimonials are approved in the admin panel. Leave this empty: the
+    // public page holds the space with a short note until the first one is published.
+    defaultTestimonials: [],
 
     defaultFaq: [
         { q: 'What ages do you work with?',              a: 'I work with children from infants through high school age. I also offer pet sitting for dogs, cats, and other small animals, and have experience with a wide range of personalities and needs.' },
