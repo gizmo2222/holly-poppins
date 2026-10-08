@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Signs in with the SSH_PRIVATE_KEY secret when it is set. If SFTP_PASSWORD
       # is also set, the password is only tried when the key is refused, which
