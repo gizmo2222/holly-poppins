@@ -36,6 +36,10 @@ const SITE_CONFIG = {
     theme: "coastal",
     colors: {},
 
+    // Holly's colours are fixed: the admin panel has no Appearance picker and
+    // the theme above always wins. Remove this line to show the picker.
+    themePicker: false,
+
     // ── Copy ──────────────────────────────────────────────────────────────────
     // Holly's wording. Anything left out uses GroveMinder's neutral default.
     copy: {
