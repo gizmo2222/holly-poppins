@@ -1,3 +1,12 @@
+# Deploy workflow for hollypoppins.com, a site built on GroveMinder (a "theme").
+# From GroveMinder's theme-template/deploy.yml. See the GroveMinder README →
+# "Making a theme".
+#
+# This repo holds only its own files (site-config.js, umbrella.png,
+# .github/known_hosts). Every deploy fetches the GroveMinder product at the
+# pinned version below and uploads the two together, so this repo never
+# carries a copy of the product's pages or PHP.
+
 name: Deploy to hollypoppins.com
 
 on:
@@ -9,64 +18,28 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout this theme
         uses: actions/checkout@v5
+        with:
+          path: theme
 
-      # Signs in with the SSH_PRIVATE_KEY secret when it is set. If SFTP_PASSWORD
-      # is also set, the password is only tried when the key is refused, which
-      # lets you add the key without a broken deploy in between. Once the key
-      # works, delete the SFTP_PASSWORD secret. See README → "Deploy key".
+      # To take a newer GroveMinder, change `ref` to its tag and push.
+      - name: Checkout GroveMinder at the pinned version
+        uses: actions/checkout@v5
+        with:
+          repository: gizmo2222/groveminder
+          ref: v1.0.0
+          path: groveminder
+
       - name: Upload via SFTP
+        working-directory: groveminder
         env:
+          DEPLOY_HOST:     hollypoppins.com
+          DEPLOY_DEST:     /home/${{ secrets.SFTP_USER }}/hollypoppins.com
+          THEME_DIR:       ../theme
+          # Extra files to upload besides site-config.js and its heroImage
+          THEME_FILES:     ""
           SFTP_USER:       ${{ secrets.SFTP_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSHPASS:         ${{ secrets.SFTP_PASSWORD }}
-        run: |
-          set -euo pipefail
-          HOST=hollypoppins.com
-          DEST="/home/${SFTP_USER}/hollypoppins.com"
-
-          cat > sftp-batch <<EOF
-          put site-config.js       $DEST/site-config.js
-          put index.html           $DEST/index.html
-          put admin.html           $DEST/admin.html
-          put hp-lib.php           $DEST/hp-lib.php
-          put mailer.php           $DEST/mailer.php
-          put cal-push.php         $DEST/cal-push.php
-          put ical-proxy.php       $DEST/ical-proxy.php
-          put email-templates.json $DEST/email-templates.json
-          put umbrella.png         $DEST/umbrella.png
-          EOF
-
-          # The server's host keys are pinned in .github/known_hosts
-          SSH_OPTS=(-o UserKnownHostsFile=.github/known_hosts -o StrictHostKeyChecking=yes -o ConnectTimeout=20)
-
-          if [ -n "$SSH_PRIVATE_KEY" ]; then
-            mkdir -p ~/.ssh
-            install -m 600 /dev/null ~/.ssh/deploy_key
-            printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-            SSH_OPTS+=(-i ~/.ssh/deploy_key -o IdentitiesOnly=yes)
-
-            # Try the key on its own (no password) so the log shows whether it works
-            echo pwd > key-check
-            if sftp "${SSH_OPTS[@]}" -o BatchMode=yes -o PasswordAuthentication=no -b key-check "$SFTP_USER@$HOST" > /dev/null 2>&1; then
-              echo "Deploy key: accepted by the server"
-            elif [ -n "$SSHPASS" ]; then
-              echo "::warning::Deploy key was refused; falling back to SFTP_PASSWORD"
-            else
-              echo "::error::Deploy key was refused and no SFTP_PASSWORD fallback is set"
-              exit 1
-            fi
-          fi
-
-          if [ -n "$SSHPASS" ]; then
-            sudo apt-get install -y sshpass > /dev/null 2>&1
-            sshpass -e sftp "${SSH_OPTS[@]}" "$SFTP_USER@$HOST" < sftp-batch
-          else
-            sftp "${SSH_OPTS[@]}" -b sftp-batch "$SFTP_USER@$HOST"
-          fi
-
-          rm -f ~/.ssh/deploy_key
-
-      - name: Confirm
-        run: echo "✅ Deployed to hollypoppins.com"
+        run: bash tools/deploy.sh

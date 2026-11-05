@@ -1,12 +1,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// site-config.js — edit this file to set up a new site instance
+// site-config.js — everything specific to hollypoppins.com
+// Data only. This repo is a theme of GroveMinder: the pages, site-core.js (the
+// logic that reads this file) and the PHP come from gizmo2222/groveminder at
+// the version pinned in .github/workflows/deploy.yml.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SITE_CONFIG = {
 
     // ── Firebase ──────────────────────────────────────────────────────────────
-    // Create a project at https://console.firebase.google.com and paste your
-    // web app config object here.
+    // The PHP endpoints read projectId (and siteName below) from this file, so
+    // keep those two values in double quotes.
     firebase: {
         apiKey:            "AIzaSyB5izE8G_gXRRW-RRt54bT6eyqxaxP-14U",
         authDomain:        "holly-poppins.firebaseapp.com",
@@ -18,18 +21,32 @@ const SITE_CONFIG = {
 
     // ── Identity ──────────────────────────────────────────────────────────────
     siteName: "Holly Poppins",
-    navEmoji: "☂",                              // shown in nav + hero + footer
+    navEmoji: "☂",                              // shown in nav + footer + favicon
     tagline:  "Perfectly Imperfect and That's OK",
     heroDesc: "Trusted, caring, and dependable — available for nannying, pet sitting, and more. Let's find a time that works perfectly for your family.",
 
-    // ── Theme colors ──────────────────────────────────────────────────────────
-    // These override the CSS custom properties, so the stylesheet never needs editing.
-    colors: {
-        navy:      "#1B2A4A",
-        navyLight: "#2C3E6B",
-        gold:      "#D4AF37",
-        goldLight: "#F0D060",
-        cream:     "#FAF6ED",
+    // Image shown in the hero instead of navEmoji. The deploy uploads it.
+    heroImage: "umbrella.png",
+
+    // ── Theme ─────────────────────────────────────────────────────────────────
+    // GroveMinder's "coastal" preset is Holly's palette exactly: navy #1B2A4A,
+    // gold #D4AF37, cream #FAF6ED. Add a key to `colors` only to move one colour
+    // away from the preset (primary, primaryLight, primaryDark, accent,
+    // accentLight, bg).
+    theme: "coastal",
+    colors: {},
+
+    // ── Copy ──────────────────────────────────────────────────────────────────
+    // Holly's wording. Anything left out uses GroveMinder's neutral default.
+    copy: {
+        navBook:                "Book Me",
+        navAsk:                 "Ask Holly",
+        testimonialsEmpty:      "Kind words from the families I care for will be shared here soon.",
+        notesPlaceholder:       "Ages of children, special needs, expected duration, etc.",
+        roleExample:            "Nanny Client · 2 years",
+        ratesIntro:             "Rates vary depending on the service, the number of children, hours, and any special requirements. I prefer to discuss pricing personally so I can give you an accurate, fair quote tailored to your situation.",
+        rateDetailsPlaceholder: "Number of children, typical hours per week, any special considerations...",
+        rateNotesExample:       "+$10 for 2+ kids",
     },
 
     // ── Default content ───────────────────────────────────────────────────────
@@ -56,33 +73,3 @@ const SITE_CONFIG = {
         { q: 'How do I cancel or reschedule?',           a: "Life happens! Please give at least 24 hours notice when possible. Just reply to your confirmation email or use the Ask a Question form to reach me." },
     ],
 };
-
-// ── Apply theme colors immediately ────────────────────────────────────────────
-// Runs before the page renders so there's no flash of the default palette.
-(function () {
-    const s = document.documentElement.style;
-    const c = SITE_CONFIG.colors;
-    if (c.navy)      s.setProperty('--navy',       c.navy);
-    if (c.navyLight) s.setProperty('--navy-light', c.navyLight);
-    if (c.gold)      s.setProperty('--gold',       c.gold);
-    if (c.goldLight) s.setProperty('--gold-light', c.goldLight);
-    if (c.cream)     s.setProperty('--cream',      c.cream);
-})();
-
-// ── Favicon (generated from navEmoji + colors, no static file needed) ─────────
-(function () {
-    const size = 64;
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = SITE_CONFIG.colors.navy || '#1B2A4A';
-    ctx.fillRect(0, 0, size, size);
-    ctx.font = '44px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(SITE_CONFIG.navEmoji || '☂', size / 2, size / 2 + 2);
-    const link = document.createElement('link');
-    link.rel = 'icon';
-    link.href = canvas.toDataURL();
-    document.head.appendChild(link);
-})();
